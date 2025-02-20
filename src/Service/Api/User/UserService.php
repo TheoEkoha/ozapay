@@ -169,8 +169,8 @@ readonly class UserService extends UserCommonService
         }
 
         $user
-            ->setCode($data['code'])
-            ->setStep('info');
+            ->setCode($data['code']);
+           // ->setStep('info');
             //->setStep(Step::Info);
 
         $this->em->persist($user);
@@ -241,7 +241,7 @@ readonly class UserService extends UserCommonService
             if (array_key_exists('_step', $data)) {
                 try {
                     $stepValue = Step::from($data['_step']);
-                    $user->setStep($stepValue);
+                    //$user->setStep($stepValue);
                 } catch (\ValueError $e) {
                     throw new \Exception(ErrorsConstant::STEP_INVALID, Response::HTTP_BAD_REQUEST);
                 }

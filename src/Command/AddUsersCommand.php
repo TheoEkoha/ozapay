@@ -208,7 +208,7 @@ class AddUsersCommand extends Command
             ->setCountry($rowData['pays'] ?? null)
             ->setAddress($rowData['ville'] . ' ' . $rowData['codepostal'] . ' '. $rowData['pays'])
             ->setPassword($this->passwordHasher->hashPassword($user, '123456'))
-            ->setStep(Step::Pin)
+            //->setStep("131313")
             ->setConditionAccepted(true)
             ->setMarketingAccepted(true)
             ->setLocal('en')

@@ -67,7 +67,7 @@ class CreateAdminCommand extends Command
         $user->setConditionAccepted(true);
         $user->setMarketingAccepted(true);
         $user->setStatus(Status::Published);
-        $user->setStep(Step::Pin);
+        //$user->setStep(Step::Pin);
         $user->setPin($this->dataEncryption->encrypt($pin));
 
         $user->setCreatedValue();
