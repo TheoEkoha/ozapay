@@ -229,10 +229,19 @@ public function edit(User $user, Request $request): User
 
 private function handlePhoneUpdate(User $user, string $phone, ?string $signature): void
 {
-    if ($this->repository->findOneBy(['phone' => $phone])) {
-        throw new Exception(ErrorsConstant::PHONE_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+    // Vérifie si le numéro de téléphone est différent de celui de l'utilisateur
+    if ($user->getPhone() !== $phone) {
+        // Vérifie si le téléphone existe déjà dans la base de données
+        if ($this->repository->findOneBy(['phone' => $phone])) {
+            throw new Exception(ErrorsConstant::PHONE_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+        }
+
+        // Met à jour le numéro de téléphone de l'utilisateur
+        $user->setPhone($phone);
+
+        // Envoie le code SMS pour la vérification
+        $this->sendSMSCode($user, $phone, VerificationConstant::SIGN_UP_VER, $signature);
     }
-    $this->sendSMSCode($user, $phone, VerificationConstant::SIGN_UP_VER, $signature);
 }
 
 private function handleEmailUpdate(User $user, string $newEmail): void
