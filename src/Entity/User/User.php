@@ -1034,4 +1034,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function updatePin(string $pin): void
+    {
+        $hashedPin = $this->dataEncryption->encrypt($pin);
+        $date = new DateTimeImmutable();
+        $dateTimezone = $date->setTimezone(new DateTimeZone('UTC'));
+        $dateFinal = $dateTimezone->add(new DateInterval('PT30M'));
+
+        $this->setPin((string)$hashedPin)
+             ->setGeneratedPassUpdated(false)
+             ->setGeneratedPassExpired($dateFinal);
+    }
 }

@@ -206,23 +206,23 @@ readonly class UserService extends UserCommonService
                 $newEmail = $data['email'];
     
                 // Vérifiez si l'email a changé
-                if ($newEmail !== $user->getEmail()) {
-                    $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
+                // if ($newEmail !== $user->getEmail()) {
+                //     $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
                     
-                    if (!$existingUser) {
-                        $user->setEmail($newEmail);
+                //     if (!$existingUser) {
+                //         $user->setEmail($newEmail);
 
-                    }
-                    // if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                    //     throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-                    // }
+                //     }
+                //     // if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                //     //     throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+                //     // }
                     
                     
-                    // Envoyez le code de validation par email seulement si l'utilisateur est nouveau
-                    if ($user->getId() === null) {
-                        $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
-                    }
-                }
+                //     // Envoyez le code de validation par email seulement si l'utilisateur est nouveau
+                //     if ($user->getId() === null) {
+                //         $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
+                //     }
+                // }
             }
     
             // Gérer le code PIN
