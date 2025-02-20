@@ -51,7 +51,7 @@ class UserController extends AbstractAdminController
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['POST'])]
-    public function update(Request $request, User $user): JsonResponse
+    public function update(Request $request, User $user): User
     {
         $data = json_decode($request->getContent(), true);
 

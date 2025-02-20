@@ -379,6 +379,6 @@ readonly class UserService extends UserCommonService
 
         $this->em->persist($user);
         $this->em->flush();
-        return $user
+        return $user;
     }
 }
