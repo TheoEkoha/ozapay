@@ -33,6 +33,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Psr\Log\LoggerInterface;
 
 readonly class UserService extends UserCommonService
 {
@@ -188,7 +189,9 @@ readonly class UserService extends UserCommonService
             // Initialisation de la variable signature
             $signature = '';
             $data = $this->getPostedData($request);
-    
+            error_log(print_r($request->request->all(), true));
+            $logger->info('Données de requête:', $request->request->all());
+
             if (array_key_exists('phone', $data)) {
                 if (array_key_exists('appSignature', $data)) {
                     $signature = $data['appSignature'];
