@@ -170,7 +170,8 @@ readonly class UserService extends UserCommonService
 
         $user
             ->setCode($data['code'])
-            ->setStep(Step::Info);
+            ->setStep('info');
+            //->setStep(Step::Info);
 
         $this->em->persist($user);
         $this->em->flush();
