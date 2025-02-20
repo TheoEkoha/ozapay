@@ -21,7 +21,7 @@ class EditController extends AbstractController
      * @return User
      * @throws \Exception
      */
-    public function __invoke(User $user, Request $request): User
+    public function __invoke(User $user, Request $request)
     {
         return $this->userService->edit($user, $request);
     }
