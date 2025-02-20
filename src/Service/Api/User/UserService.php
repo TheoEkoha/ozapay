@@ -185,11 +185,10 @@ readonly class UserService extends UserCommonService
     public function edit(User $user, Request $request): User
     {
         try {
+            // Initialisation de la variable signature
+            $signature = '';
             $data = $this->getPostedData($request);
-            
-            // Log des données reçues
-            error_log('Données reçues : ' . json_encode($data));
-
+    
             if (array_key_exists('phone', $data)) {
                 $user->setPhone($data['phone']);
                 if (array_key_exists('appSignature', $data)) {
@@ -198,25 +197,23 @@ readonly class UserService extends UserCommonService
                 if (!empty($this->repository->findOneBy(['phone' => $data['phone']]))) {
                     throw new Exception(ErrorsConstant::PHONE_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
                 }
-
+    
                 // validate by phone
                 $this->sendSMSCode($user, $data['phone'], VerificationConstant::SIGN_UP_VER, $signature);
             }
-
+    
+            // Vérification et mise à jour de l'email
             if (array_key_exists('email', $data)) {
                 $newEmail = $data['email'];
-
+    
                 // Vérifiez si l'email a changé
                 if ($newEmail !== $user->getEmail()) {
-                    // Cherchez un utilisateur avec le même email dans la base de données
                     $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
-
-                    // Si un autre utilisateur existe avec ce même email, lancez une exception
+                    
                     if ($existingUser && $existingUser->getId() !== $user->getId()) {
                         throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
                     }
-
-                    // Mettez à jour l'email de l'utilisateur
+                    
                     $user->setEmail($newEmail);
                     
                     // Envoyez le code de validation par email seulement si l'utilisateur est nouveau
@@ -225,45 +222,49 @@ readonly class UserService extends UserCommonService
                     }
                 }
             }
-
+    
+            // Gérer le code PIN
             if (array_key_exists('pin', $data) && $data['_step'] === 'pin') {
                 $generatedPassword = $this->tools->generateRandomString();
                 $user->setPassword($this->passwordHasher->hashPassword($user, $generatedPassword));
-                
-                // encrypt pin code
+    
                 $hashedPin = $this->dataEncryption->encrypt($data['pin']);
                 $date = new \DateTimeImmutable();
-                $dateFinal = $date->setTimezone(new \DateTimeZone('UTC'))->add(new \DateInterval('PT30M'));
-
+                $dateTimezone = $date->setTimezone(new \DateTimeZone('UTC'));
+                $dateFinal = $dateTimezone->add(new \DateInterval('PT30M'));
+    
                 $user
                     ->setPin((string)$hashedPin)
                     ->setGeneratedPassUpdated(false)
                     ->setGeneratedPassExpired($dateFinal);
-                    
-                // send mail welcome after registration
+    
                 $this->mailerService->sendWelcomeAfterRegistration($user, $generatedPassword);
             }
-
+    
             $user
                 ->setCity($data['city'] ?? null)
                 ->setCountry($data['country'] ?? null)
-                ->setPostalCode($data['postalCode'] ?? null)
+                ->setPOstalCode($data['postalCode'] ?? null)
                 ->setDenomination($data['denomination'] ?? null)
                 ->setSiret($data['siret'] ?? null)
                 ->setHasWallet($data['hasWallet'] ?? false);
-
+    
             if (array_key_exists('_step', $data)) {
                 try {
                     $stepValue = Step::from($data['_step']);
-                    //$user->setStep($stepValue);
+                    // $user->setStep($stepValue);
                 } catch (\ValueError $e) {
                     throw new \Exception(ErrorsConstant::STEP_INVALID, Response::HTTP_BAD_REQUEST);
                 }
             }
-
+    
             $this->em->persist($user);
-            $this->em->flush();
-
+            try {
+                $this->em->flush();
+            } catch (\Doctrine\DBAL\Exception $e) {
+                error_log('Erreur lors de la mise à jour: ' . $e->getMessage());
+            }
+    
             return $user;
         } catch (Exception $e) {
             throw $e;
