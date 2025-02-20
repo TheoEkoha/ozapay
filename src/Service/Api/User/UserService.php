@@ -212,17 +212,24 @@ readonly class UserService extends UserCommonService
             // }
             if (array_key_exists('email', $data)) {
                 $newEmail = $data['email'];
+                
+                // Vérifiez si l'email a changé
                 if ($newEmail !== $user->getEmail()) {
-                    $user->setEmail($newEmail);
-                    
-                    // Vérifiez si l'email existe déjà, mais ignorez l'utilisateur actuel
+                    // Cherchez un utilisateur avec le même email dans la base de données
                     $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
+                    
+                    // Si un autre utilisateur existe avec ce même email, lancez une exception
                     if ($existingUser && $existingUser->getId() !== $user->getId()) {
                         throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
                     }
+                    
+                    // Si l'email est valide et n'existe pas, mettez à jour l'email de l'utilisateur
+                    $user->setEmail($newEmail);
             
-                    // Envoyez le code de validation uniquement si l'email a changé
-                    $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
+                    // Envoyez le code de validation par email seulement si l'utilisateur est nouveau
+                    if ($user->getId() === null) {
+                        $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
+                    }
                 }
             }
 
