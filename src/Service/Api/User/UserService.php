@@ -223,7 +223,8 @@ readonly class UserService extends UserCommonService
                 $dateFinal = $dateTimezone->add(new \DateInterval('PT30M'));
 
                 $user
-                    ->setPin($hashedPin)
+                    //->setPin($hashedPin)
+                    ->setPin((string)$hashedPin)
                     ->setGeneratedPassUpdated(false)
                     ->setGeneratedPassExpired($dateFinal);
                 // send mail welcome after registration
@@ -241,7 +242,7 @@ readonly class UserService extends UserCommonService
             if (array_key_exists('_step', $data)) {
                 try {
                     $stepValue = Step::from($data['_step']);
-                    //$user->setStep($stepValue);
+                    // /$user->setStep($stepValue);
                 } catch (\ValueError $e) {
                     throw new \Exception(ErrorsConstant::STEP_INVALID, Response::HTTP_BAD_REQUEST);
                 }
