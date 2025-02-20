@@ -45,7 +45,7 @@ readonly class UserService extends UserCommonService
         MailerService                         $mailerService,
         private EntityManagerInterface        $em,
         protected UserPasswordHasherInterface $passwordHasher,
-        protected LoggerInterface             $logger,
+        LoggerInterface                       $logger,
         SmsService                            $sms,
         private AuthenticationService         $authService,
         private Tools                         $tools,
@@ -53,8 +53,8 @@ readonly class UserService extends UserCommonService
         private DataEncryption                $dataEncryption
     )
     {
-        $this->logger = $logger;
         parent::__construct($serializer, $sms, $em, $mailerService);
+        $this->logger = $logger;
     }
 
     /**
