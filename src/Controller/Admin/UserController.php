@@ -14,7 +14,9 @@ use App\Repository\User\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -29,9 +31,8 @@ class UserController extends AbstractAdminController
         private readonly UserRepository $repository,
         protected TranslatorInterface   $translator,
         private EntityManagerInterface  $em,
-        private UserService $userService,
-    ) {
-    }
+        private UserService $userService
+    ) {}
 
     #[Route('/', name: 'list', methods: ['GET'])]
     public function index(): Response
@@ -39,27 +40,23 @@ class UserController extends AbstractAdminController
         return $this->render('pages/user/index.html.twig', [
             'page_title' => $this->translator->trans('Users'),
             'breadcrumbs' => [
-                [
-                    'title' => 'Dashboard',
-                    'url' => 'dashboard'
-                ],
-                [
-                    'title' => 'Users',
-                    'url' => 'admin.user.list'
-                ]
+                ['title' => 'Dashboard', 'url' => 'dashboard'],
+                ['title' => 'Users', 'url' => 'admin.user.list']
             ],
-            'count_user' => count($this->repository->findBy(['status' => Status::Published, '_step' => Step::Pin])),
+            'count_user' => count($this->repository->findBy([
+                'status' => Status::Published,
+                '_step' => Step::Pin
+            ])),
         ]);
     }
 
-
     #[Route('/{id}/edit', name: 'edit', methods: ['POST'])]
-    public function update(Request $request, User $user): Response
+    public function update(Request $request, User $user): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
         if (!$data) {
-            return new Response(['error' => 'Invalid data'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'Invalid data'], Response::HTTP_BAD_REQUEST);
         }
 
         return $this->userService->updateUser($user, $data);
@@ -84,30 +81,28 @@ class UserController extends AbstractAdminController
     #[Route('/modal', name: 'modal', methods: ['GET', 'POST'])]
     public function modal(): JsResponseBuilder
     {
-        return $this->js()->modal('pages/user/modal.html.twig', [
-            'data' => []
-        ]);
+        return $this->js()->modal('pages/user/modal.html.twig', ['data' => []]);
     }
 
-    /**
-     * @param User $user
-     * @return RedirectResponse
-     */
-    #[Route('/{id}/delete', name: 'delete')]
+    #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
     public function delete(User $user): RedirectResponse
     {
+        try {
+            $this->em->getRepository(VerificationCode::class)->createQueryBuilder('v')
+                ->delete()
+                ->where('v.responsible = :user')
+                ->setParameter('user', $user)
+                ->getQuery()
+                ->execute();
 
-        $this->em->getRepository(VerificationCode::class)->createQueryBuilder('v')
-            ->delete()
-            ->where('v.responsible = :user')
-            ->setParameter('user', $user)
-            ->getQuery()
-            ->execute();
+            $this->em->remove($user);
+            $this->em->flush();
 
-        $this->em->remove($user);
-        $this->em->flush();
+            $this->addFlash('success', 'User deleted !');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'An error occurred while deleting the user.');
+        }
 
-        $this->addFlash('success', 'User deleted !');
         return $this->redirectToRoute('admin.user.list');
     }
 }
