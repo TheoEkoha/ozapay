@@ -359,7 +359,7 @@ readonly class UserService extends UserCommonService
     /**
      * @throws JsonException
      */
-    public function updateUser(User $user, array $data): void
+    public function updateUser(User $user, array $data): User
     {
         if (isset($data['firstName'])) {
             $user->setFirstName($data['firstName']);
@@ -379,5 +379,6 @@ readonly class UserService extends UserCommonService
 
         $this->em->persist($user);
         $this->em->flush();
+        return $user
     }
 }

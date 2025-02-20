@@ -62,9 +62,7 @@ class UserController extends AbstractAdminController
             return new Response(['error' => 'Invalid data'], Response::HTTP_BAD_REQUEST);
         }
 
-        $this->userService->updateUser($user, $data);
-
-        return new Response(['message' => 'User updated successfully']);
+        return $this->userService->updateUser($user, $data);
     }
 
     #[Route('/{id}', name: 'profile', methods: ['GET'])]
