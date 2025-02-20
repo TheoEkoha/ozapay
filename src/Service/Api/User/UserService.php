@@ -185,8 +185,10 @@ readonly class UserService extends UserCommonService
     public function edit(User $user, Request $request): User
     {
         try {
-            $signature = '';
             $data = $this->getPostedData($request);
+            
+            // Log des données reçues
+            error_log('Données reçues : ' . json_encode($data));
 
             if (array_key_exists('phone', $data)) {
                 $user->setPhone($data['phone']);
@@ -201,31 +203,22 @@ readonly class UserService extends UserCommonService
                 $this->sendSMSCode($user, $data['phone'], VerificationConstant::SIGN_UP_VER, $signature);
             }
 
-            // if (array_key_exists('email', $data)) {
-            //     $user->setEmail($data['email']);
-            //     if (!empty($this->repository->findOneBy(['email' => $data['email']]))) {
-            //         throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-            //     }
-
-            //     // validate by email
-            //     $this->sendMailCode($user, $data['email'], VerificationConstant::SIGN_UP_VER);
-            // }
             if (array_key_exists('email', $data)) {
                 $newEmail = $data['email'];
-                
+
                 // Vérifiez si l'email a changé
                 if ($newEmail !== $user->getEmail()) {
                     // Cherchez un utilisateur avec le même email dans la base de données
                     $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
-                    
-                    // // Si un autre utilisateur existe avec ce même email, lancez une exception
-                    // if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                    //     throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-                    // }
-                    
-                    // Si l'email est valide et n'existe pas, mettez à jour l'email de l'utilisateur
+
+                    // Si un autre utilisateur existe avec ce même email, lancez une exception
+                    if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                        throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+                    }
+
+                    // Mettez à jour l'email de l'utilisateur
                     $user->setEmail($newEmail);
-            
+                    
                     // Envoyez le code de validation par email seulement si l'utilisateur est nouveau
                     if ($user->getId() === null) {
                         $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
@@ -235,20 +228,18 @@ readonly class UserService extends UserCommonService
 
             if (array_key_exists('pin', $data) && $data['_step'] === 'pin') {
                 $generatedPassword = $this->tools->generateRandomString();
-
                 $user->setPassword($this->passwordHasher->hashPassword($user, $generatedPassword));
+                
                 // encrypt pin code
                 $hashedPin = $this->dataEncryption->encrypt($data['pin']);
-                // manage date to add 30 min to new user
                 $date = new \DateTimeImmutable();
-                $dateTimezone = $date->setTimezone(new \DateTimeZone('UTC'));
-                $dateFinal = $dateTimezone->add(new \DateInterval('PT30M'));
+                $dateFinal = $date->setTimezone(new \DateTimeZone('UTC'))->add(new \DateInterval('PT30M'));
 
                 $user
-                    //->setPin($hashedPin)
                     ->setPin((string)$hashedPin)
                     ->setGeneratedPassUpdated(false)
                     ->setGeneratedPassExpired($dateFinal);
+                    
                 // send mail welcome after registration
                 $this->mailerService->sendWelcomeAfterRegistration($user, $generatedPassword);
             }
@@ -256,7 +247,7 @@ readonly class UserService extends UserCommonService
             $user
                 ->setCity($data['city'] ?? null)
                 ->setCountry($data['country'] ?? null)
-                ->setPOstalCode($data['postalCode'] ?? null)
+                ->setPostalCode($data['postalCode'] ?? null)
                 ->setDenomination($data['denomination'] ?? null)
                 ->setSiret($data['siret'] ?? null)
                 ->setHasWallet($data['hasWallet'] ?? false);
@@ -264,19 +255,14 @@ readonly class UserService extends UserCommonService
             if (array_key_exists('_step', $data)) {
                 try {
                     $stepValue = Step::from($data['_step']);
-                    // /$user->setStep($stepValue);
+                    //$user->setStep($stepValue);
                 } catch (\ValueError $e) {
                     throw new \Exception(ErrorsConstant::STEP_INVALID, Response::HTTP_BAD_REQUEST);
                 }
             }
 
             $this->em->persist($user);
-            try {
-                $this->em->flush(); // Ou toute autre opération de mise à jour
-            } catch (\Doctrine\DBAL\Exception $e) {
-                error_log('Erreur lors de la mise à jour: ' . $e->getMessage());
-                // Gérer l'erreur (ex. retour d'une réponse d'erreur)
-            }
+            $this->em->flush();
 
             return $user;
         } catch (Exception $e) {
