@@ -1,13 +1,25 @@
 #!/bin/bash
 
-# Demande à l'utilisateur d'entrer le message de commit
-read -p "Entrez le message de commit : " commit_message
+# Fichier contenant le numéro de commit
+COMMIT_NUMBER_FILE="commit_number.txt"
 
-# Ajoute tous les fichiers et commit
-git add --all
-git commit -m "$commit_message"
+# Vérifie si le fichier existe, sinon le crée avec le numéro 0
+if [ ! -f "$COMMIT_NUMBER_FILE" ]; then
+    echo "0" > "$COMMIT_NUMBER_FILE"
+fi
 
-# Pousse les changements vers la branche principale
-git push origin main
+# Lis le numéro de commit actuel
+COMMIT_NUMBER=$(cat "$COMMIT_NUMBER_FILE")
 
-echo "Les changements ont été poussés avec succès."
+# Incrémente le numéro de commit
+NEW_COMMIT_NUMBER=$((COMMIT_NUMBER + 1))
+
+# Met à jour le fichier avec le nouveau numéro de commit
+echo "$NEW_COMMIT_NUMBER" > "$COMMIT_NUMBER_FILE"
+
+# Effectue le commit avec le nouveau numéro
+git add .
+git commit -m "$NEW_COMMIT_NUMBER"
+
+# Ajoute les autres commandes nécessaires ici (comme le push)
+# git push origin main
