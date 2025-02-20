@@ -181,91 +181,111 @@ readonly class UserService extends UserCommonService
         return $user;
     }
 
-    /**
-     * @throws \Exception
-     */
-    public function edit(User $user, Request $request): User
-    {
-        try {
-            // Initialisation de la variable signature
-            $signature = '';
-            $data = $this->getPostedData($request);
-            error_log(print_r($request->request->all(), true));
-            $this->logger->info('Données de requête:', $request->request->all());
+/**
+ * @throws \Exception
+ */
+public function edit(User $user, Request $request): User
+{
+    try {
+        // Récupérer les données de la requête
+        $data = $this->getPostedData($request);
+        $this->logger->info('Données de requête:', $data);
 
-            if (array_key_exists('phone', $data)) {
-                if (array_key_exists('appSignature', $data)) {
-                    $signature = $data['appSignature'];
-                }
-                if (!empty($this->repository->findOneBy(['phone' => $data['phone']]))) {
-                    throw new Exception(ErrorsConstant::PHONE_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-                }
-                // validate by phone
-                $this->sendSMSCode($user, $data['phone'], VerificationConstant::SIGN_UP_VER, $signature);
-            }
-    
-            // Vérification et mise à jour de l'email
-            if (isset($data['email'])) {
-                $newEmail = $data['email'];
-                if ($newEmail !== $user->getEmail()) {
-                    $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
-                    if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                        throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-                    }
-    
-                    $user->setEmail($newEmail);
-    
-                    // Envoyez le code de validation par email seulement si l'utilisateur est nouveau
-                    if ($user->getId() === null) {
-                        $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
-                    }
-                }
-            }
-    
-            // Gérer le code PIN
-            if (array_key_exists('pin', $data) && $data['_step'] === 'pin') {
-                $generatedPassword = $this->tools->generateRandomString();
-                $user->setPassword($this->passwordHasher->hashPassword($user, $generatedPassword));
-                $hashedPin = $this->dataEncryption->encrypt($data['pin']);
-                $date = new \DateTimeImmutable();
-                $dateFinal = $date->setTimezone(new \DateTimeZone('UTC'))->add(new \DateInterval('PT30M'));
-    
-                $user->setPin((string)$hashedPin)
-                     ->setGeneratedPassUpdated(false)
-                     ->setGeneratedPassExpired($dateFinal);
-    
-                $this->mailerService->sendWelcomeAfterRegistration($user, $generatedPassword);
-            }
-    
-            // Mise à jour des autres champs
-            $user->setCity($data['city'] ?? null)
-                 ->setCountry($data['country'] ?? null)
-                 ->setPostalCode($data['postalCode'] ?? null)
-                 ->setDenomination($data['denomination'] ?? null)
-                 ->setSiret($data['siret'] ?? null)
-                 ->setHasWallet($data['hasWallet'] ?? false);
-    
-            if (array_key_exists('_step', $data)) {
-                try {
-                    $stepValue = Step::from($data['_step']);
-                    // $user->setStep($stepValue);
-                } catch (\ValueError $e) {
-                    throw new \Exception(ErrorsConstant::STEP_INVALID, Response::HTTP_BAD_REQUEST);
-                }
-            }
-    
-            $this->em->persist($user);
-            $this->em->flush();
-            
-            return $user;
-        } catch (Exception $e) {
-            // Gérer l'exception de manière appropriée
-            if ($this->em->isOpen()) {
-                $this->em->close(); // Ferme l'EntityManager
-            }
-            throw new Exception('Erreur lors de la mise à jour de l\'utilisateur: ' . $e->getMessage(), $e->getCode());
+        // Vérification et mise à jour du numéro de téléphone
+        if (isset($data['phone'])) {
+            $this->handlePhoneUpdate($user, $data['phone'], $data['appSignature'] ?? null);
+        }
+
+        // Vérification et mise à jour de l'email
+        if (isset($data['email'])) {
+            $this->handleEmailUpdate($user, $data['email']);
+        }
+
+        // Gérer le code PIN
+        if (isset($data['pin']) && $data['_step'] === 'pin') {
+            $this->handlePinUpdate($user, $data['pin']);
+        }
+
+        // Mise à jour des autres champs
+        $this->updateUserFields($user, $data);
+
+        // Gérer l'étape si spécifiée
+        if (isset($data['_step'])) {
+            $this->setUserStep($user, $data['_step']);
+        }
+
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return $user;
+    } catch (Exception $e) {
+        // Gérer l'exception de manière appropriée
+        if ($this->em->isOpen()) {
+            $this->em->close(); // Ferme l'EntityManager
+        }
+        throw new Exception('Erreur lors de la mise à jour de l\'utilisateur: ' . $e->getMessage(), $e->getCode());
+    }
+}
+
+private function handlePhoneUpdate(User $user, string $phone, ?string $signature): void
+{
+    if ($this->repository->findOneBy(['phone' => $phone])) {
+        throw new Exception(ErrorsConstant::PHONE_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+    }
+    $this->sendSMSCode($user, $phone, VerificationConstant::SIGN_UP_VER, $signature);
+}
+
+private function handleEmailUpdate(User $user, string $newEmail): void
+{
+    if ($newEmail !== $user->getEmail()) {
+        $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
+        if ($existingUser && $existingUser->getId() !== $user->getId()) {
+            throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+        }
+
+        $user->setEmail($newEmail);
+
+        // Envoyer le code de validation par email seulement si l'utilisateur est nouveau
+        if ($user->getId() === null) {
+            $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
         }
     }
+}
+
+private function handlePinUpdate(User $user, string $pin): void
+{
+    $generatedPassword = $this->tools->generateRandomString();
+    $user->setPassword($this->passwordHasher->hashPassword($user, $generatedPassword));
+    $hashedPin = $this->dataEncryption->encrypt($pin);
+    $dateFinal = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
+        ->add(new \DateInterval('PT30M'));
+
+    $user->setPin((string)$hashedPin)
+        ->setGeneratedPassUpdated(false)
+        ->setGeneratedPassExpired($dateFinal);
+
+    $this->mailerService->sendWelcomeAfterRegistration($user, $generatedPassword);
+}
+
+private function updateUserFields(User $user, array $data): void
+{
+    $user->setCity($data['city'] ?? null)
+         ->setCountry($data['country'] ?? null)
+         ->setPostalCode($data['postalCode'] ?? null)
+         ->setDenomination($data['denomination'] ?? null)
+         ->setSiret($data['siret'] ?? null)
+         ->setHasWallet($data['hasWallet'] ?? false);
+}
+
+private function setUserStep(User $user, string $step): void
+{
+    try {
+        $stepValue = Step::from($step);
+        // $user->setStep($stepValue);
+    } catch (\ValueError $e) {
+        throw new Exception(ErrorsConstant::STEP_INVALID, Response::HTTP_BAD_REQUEST);
+    }
+}
 
     /**
      * @throws RandomException
