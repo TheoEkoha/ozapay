@@ -58,13 +58,16 @@ class UserController extends AbstractController
     #[Route('/{id}/edit', name: 'edit', methods: ['PUT'])]
     public function update(Request $request, User $user): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-    
-        if (!$data) {
-            return new JsonResponse(['error' => 'Invalid data'], Response::HTTP_BAD_REQUEST);
+        if (isset($data['email'])) {
+            $user->setEmail($data['email']);
         }
     
-        // Logique pour mettre à jour l'utilisateur
-        return $this->userService->updateUser($user, $data);
+        if (isset($data['status'])) {
+            $user->setStatus($data['status']);
+        }
+    
+        $this->em->flush();
+    
+        return new JsonResponse(['message' => 'User updated successfully'], Response::HTTP_OK);
     }
 }
