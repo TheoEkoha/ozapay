@@ -201,15 +201,15 @@ readonly class UserService extends UserCommonService
                 $this->sendSMSCode($user, $data['phone'], VerificationConstant::SIGN_UP_VER, $signature);
             }
 
-            if (array_key_exists('email', $data)) {
-                $user->setEmail($data['email']);
-                if (!empty($this->repository->findOneBy(['email' => $data['email']]))) {
-                    throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-                }
+            // if (array_key_exists('email', $data)) {
+            //     $user->setEmail($data['email']);
+            //     if (!empty($this->repository->findOneBy(['email' => $data['email']]))) {
+            //         throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+            //     }
 
-                // validate by email
-                $this->sendMailCode($user, $data['email'], VerificationConstant::SIGN_UP_VER);
-            }
+            //     // validate by email
+            //     $this->sendMailCode($user, $data['email'], VerificationConstant::SIGN_UP_VER);
+            // }
 
             if (array_key_exists('pin', $data) && $data['_step'] === 'pin') {
                 $generatedPassword = $this->tools->generateRandomString();
