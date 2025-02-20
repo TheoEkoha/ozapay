@@ -1,0 +1,351 @@
+<?php
+
+namespace App\Service\Api\User;
+
+use App\Common\Constants\Response\ErrorsConstant;
+use App\Common\Constants\Response\SuccessConstants;
+use App\Common\Constants\Response\VerificationConstant;
+use App\Common\Constants\VerificationTypeConstant;
+use App\Entity\Enum\Status;
+use App\Entity\Enum\Step;
+use App\Entity\User\Particular;
+use App\Entity\User\Professional;
+use App\Entity\User\Relation;
+use App\Entity\User\User;
+use App\Entity\User\VerificationCode;
+use App\Repository\User\UserRepository;
+use App\Security\AuthenticationService;
+use App\Service\Mail\MailerService;
+use App\Service\SmsService;
+use App\Utils\DataEncryption;
+use App\Utils\Tools;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
+use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTEncodeFailureException;
+use PHPUnit\Framework\Exception;
+use Psr\Log\LoggerInterface;
+use Random\RandomException;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\BrowserKit\Exception\JsonException;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
+use Symfony\Component\Serializer\SerializerInterface;
+
+readonly class UserService extends UserCommonService
+{
+    public function __construct(
+        SerializerInterface                   $serializer,
+        private UserRepository                $repository,
+        protected TokenGeneratorInterface     $tokenGenerator,
+        MailerService                         $mailerService,
+        private EntityManagerInterface        $em,
+        protected UserPasswordHasherInterface $passwordHasher,
+        protected LoggerInterface             $logger,
+        SmsService                            $sms,
+        private AuthenticationService         $authService,
+        private Tools                         $tools,
+        private Security                      $security,
+        private DataEncryption                $dataEncryption
+    )
+    {
+        parent::__construct($serializer, $sms, $em, $mailerService);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws JsonException
+     */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $data = $this->getPostedData($request);
+
+        try {
+            $user = $this->repository->findOneBy(['email' => $data['email']]);
+            if (!$user) {
+                throw new JsonException(ErrorsConstant::USER_NOT_FOUND, Response::HTTP_NOT_FOUND);
+            }
+            $resetToken = $this->tokenGenerator->generateToken();
+            $user->setResetToken($resetToken);
+
+            $this->em->persist($user);
+            $this->em->flush();
+
+            $url = $data['url'] . '?token=' . $resetToken;
+            //send mail to reset pass
+            $this->mailerService->sendMailToResetPass($user, $url);
+
+            return new JsonResponse(['resetToken' => $resetToken], Response::HTTP_OK);
+
+        } catch (Exception $e) {
+            throw new JsonException(ErrorsConstant::USER_NOT_FOUND, Response::HTTP_NOT_FOUND);
+        }
+
+
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function reinitializePassword(Request $request)
+    {
+        $data = $this->getPostedData($request);
+
+        try {
+            $user = $this->repository->findOneBy(['resetToken' => $data['token']]);
+            if (!$user) {
+                throw new JsonException(ErrorsConstant::USER_NOT_FOUND, Response::HTTP_NOT_FOUND);
+            }
+
+            $user->setPassword($this->passwordHasher->hashPassword($user, $data['password']))
+                ->setResetToken(null)
+                ->setGeneratedPassUpdated(true);
+            $this->em->persist($user);
+            $this->em->flush();
+
+            return $user;
+
+        } catch (Exception $e) {
+            throw new JsonException(ErrorsConstant::USER_NOT_FOUND, Response::HTTP_NOT_FOUND);
+        }
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function renewPassword(Request $request): JsonResponse
+    {
+        $user = $this->security->getUser();
+        if (!$user instanceof User) {
+            throw new JsonException(ErrorsConstant::USER_NOT_CONNECTED, Response::HTTP_UNAUTHORIZED);
+        }
+
+        $data = $this->getPostedData($request);
+        if (!array_key_exists('oldPassword', $data) || !array_key_exists('newPassword', $data)) {
+            throw new JsonException(ErrorsConstant::INVALID_REQUEST, Response::HTTP_BAD_REQUEST);
+        }
+
+        if (!$this->passwordHasher->isPasswordValid($user, $data['oldPassword'])) {
+            throw new JsonException(ErrorsConstant::INVALID_CREDENTIALS, Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Add check for same password
+        if ($data['oldPassword'] === $data['newPassword']) {
+            throw new JsonException(ErrorsConstant::PASSWORD_NOT_CHANGED, Response::HTTP_BAD_REQUEST);
+        }
+
+        $user->setPassword($this->passwordHasher->hashPassword($user, $data['newPassword']))
+            ->setGeneratedPassUpdated(true);
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return new JsonResponse([], Response::HTTP_OK, ['message' => SuccessConstants::PASSWORD_CHANGED]);
+    }
+
+    public function signUp(Request $request): User
+    {
+        $data = $this->getPostedData($request);
+
+        /** @var ?User $user */
+        $user = null;
+        if (array_key_exists('role', $data)) {
+            if ($data['role'] === 'professional') {
+                $user = $this->deserialize($data, Professional::class, 'json', ['groups' => ['user:write', 'user:pro:write']]);
+                $user->setAddress($data['denomination']);
+            }
+            if ($data['role'] === 'particular') {
+                $user = $this->deserialize($data, Particular::class, 'json', ['groups' => ['user:write', 'user:part:write']]);
+            }
+        }
+
+        if (!is_null($data['code'])) {
+            $existedUser = $this->repository->findOneBy(['code' => $data['code'], 'status' => Status::Published]);
+            if (!is_null($existedUser)) {
+                $this->createRelation($user, $existedUser, $data['code']);
+            }
+        }
+
+        $user
+            ->setCode($data['code']);
+            //->setStep(Step::Info);
+
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return $user;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function edit(User $user, Request $request): User
+    {
+        try {
+            $signature = '';
+            $data = $this->getPostedData($request);
+
+            if (array_key_exists('phone', $data)) {
+                $user->setPhone($data['phone']);
+                if (array_key_exists('appSignature', $data)) {
+                    $signature = $data['appSignature'];
+                }
+                if (!empty($this->repository->findOneBy(['phone' => $data['phone']]))) {
+                    throw new Exception(ErrorsConstant::PHONE_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+                }
+
+                // validate by phone
+                $this->sendSMSCode($user, $data['phone'], VerificationConstant::SIGN_UP_VER, $signature);
+            }
+
+            if (array_key_exists('email', $data)) {
+                $user->setEmail($data['email']);
+                if (!empty($this->repository->findOneBy(['email' => $data['email']]))) {
+                    throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+                }
+
+                // validate by email
+                $this->sendMailCode($user, $data['email'], VerificationConstant::SIGN_UP_VER);
+            }
+
+            if (array_key_exists('pin', $data) && $data['_step'] === 'pin') {
+                $generatedPassword = $this->tools->generateRandomString();
+
+                $user->setPassword($this->passwordHasher->hashPassword($user, $generatedPassword));
+                // encrypt pin code
+                $hashedPin = $this->dataEncryption->encrypt($data['pin']);
+                // manage date to add 30 min to new user
+                $date = new \DateTimeImmutable();
+                $dateTimezone = $date->setTimezone(new \DateTimeZone('UTC'));
+                $dateFinal = $dateTimezone->add(new \DateInterval('PT30M'));
+
+                $user
+                    ->setPin($hashedPin)
+                    ->setGeneratedPassUpdated(false)
+                    ->setGeneratedPassExpired($dateFinal);
+                // send mail welcome after registration
+                $this->mailerService->sendWelcomeAfterRegistration($user, $generatedPassword);
+            }
+
+            $user
+                ->setCity($data['city'] ?? null)
+                ->setCountry($data['country'] ?? null)
+                ->setPOstalCode($data['postalCode'] ?? null)
+                ->setDenomination($data['denomination'] ?? null)
+                ->setSiret($data['siret'] ?? null)
+                ->setHasWallet($data['hasWallet'] ?? false);
+
+            if (array_key_exists('_step', $data)) {
+                try {
+                    $stepValue = Step::from($data['_step']);
+                    $user->setStep($stepValue);
+                } catch (\ValueError $e) {
+                    throw new \Exception(ErrorsConstant::STEP_INVALID, Response::HTTP_BAD_REQUEST);
+                }
+            }
+
+            $this->em->persist($user);
+            $this->em->flush();
+
+            return $user;
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws RandomException
+     * @throws JWTEncodeFailureException
+     */
+    public function verifyCode(User $user, int $code, string $type, string $for): array|VerificationCode|null
+    {
+        $mailVerify = match ($for) {
+            VerificationConstant::SIGN_UP_VER => VerificationConstant::VERIFICATION_FOR_SIGN_UP,
+            VerificationConstant::SIGN_IN_VER => VerificationConstant::VERIFICATION_FOR_SIGN_IN
+        };
+
+        $verification = $this->em->getRepository(VerificationCode::class)->findOneBy([
+            'responsible' => $user,
+            'code' => $code,
+            'type' => $type,
+            'verificationFor' => $mailVerify,
+            'isVerified' => false
+        ]);
+
+        //        dd($verification, $date = new \DateTimeImmutable(), $date->add(new \DateInterval('PT1M')), $verification->getExpiredAt());
+
+        $dateRef = new \DateTimeImmutable();
+        $dateTimezone = $dateRef->setTimezone(new \DateTimeZone('UTC'));
+        // Verify if verification is null or code is expired
+        if (!$verification || $verification->getExpiredAt() < $dateTimezone) {
+            return null;
+        } else {
+            // make code isVerified
+            $verification->setVerified(true);
+            $this->em->persist($verification);
+            $this->em->flush();
+
+            if ($verification->getVerificationFor() === VerificationConstant::VERIFICATION_FOR_SIGN_IN) {
+                // Generate session ID for this authentication attempt
+                $sessionId = bin2hex(random_bytes(32));
+                // Store token
+                return ['tempToken' => $this->authService->storeAuthenticationSession($sessionId, $user->getId())];
+            }
+
+            // Generate JWT token for this authentication attempt
+            return $verification;
+        }
+    }
+
+    /**
+     * @param User $user
+     * @param User $existedUser
+     * @param string $code
+     * @return void
+     */
+    public function createRelation(User $user, User $existedUser, string $code): void
+    {
+        $user->setCode(null);
+        $relation = (new Relation())
+            ->setUserInvited($user)
+            ->setUserParent($existedUser)
+            ->setCode($code);
+        $this->em->persist($relation);
+
+        $user->setCode(strtoupper($this->tools->generateRandomString(6)));
+        $this->em->persist($user);
+    }
+
+
+    /**
+     * @throws JsonException
+     * @throws NonUniqueResultException
+     */
+    public function resendCode(User $user, Request $request): JsonResponse
+    {
+        $data = $this->getPostedData($request);
+
+        // $data must contains : type, for to continue
+        if (!array_key_exists('type', $data) && !array_key_exists('for', $data)) {
+            throw new JsonException(ErrorsConstant::INVALID_REQUEST, Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($data['type'] === VerificationTypeConstant::TYPE_SMS) {
+            // $data must contains :  appSignature
+            if (!array_key_exists('appSignature', $data)) {
+                throw new JsonException(ErrorsConstant::INVALID_REQUEST, Response::HTTP_BAD_REQUEST);
+            }
+            $this->sendSMSCode($user, $user->getPhone(), $data['for'], $data['appSignature']);
+        }
+
+        if ($data['type'] === VerificationTypeConstant::TYPE_MAIL) {
+            $this->sendMailCode($user, $user->getEmail(), $data['for']);
+        }
+
+        return new JsonResponse([], Response::HTTP_OK, ['message' => SuccessConstants::CODE_SENT_OTP]);
+    }
+
+
+}

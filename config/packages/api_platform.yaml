@@ -1,0 +1,52 @@
+api_platform:
+    title: API
+    description: 'Plateform For Ozapay'
+    version: '3.3'
+
+    enable_swagger: true
+    enable_swagger_ui: false # disable swagger UI
+    enable_re_doc: true # enable ReDoc
+
+    eager_loading:
+        enabled: true
+        fetch_partial: false
+        max_joins: 1000
+        force_eager: false
+
+    mapping:
+        paths: [ '%kernel.project_dir%/src/Entity' ]
+
+    formats:
+        jsonld: [ 'application/ld+json' ]
+        multipart: [ 'multipart/form-data' ]
+        json: [ 'application/json' ]
+        html: [ 'text/html' ]
+        jsonhal: [ 'application/hal+json' ]
+
+    patch_formats:
+        json: [ 'application/merge-patch+json' ]
+
+    docs_formats:
+        jsonld: [ 'application/ld+json' ]
+        jsonopenapi: [ 'application/vnd.openapi+json' ]
+        html: [ 'text/html' ]
+
+    defaults:
+        iris: false
+        stateless: true
+        cache_headers:
+            vary: [ 'Content-Type', 'Authorization', 'Origin' ]
+        extra_properties:
+            standard_put: true
+            rfc_7807_compliant_errors: true
+        pagination_items_per_page: 10 # Default value
+        pagination_client_items_per_page: true
+
+    #  keep_legacy_inflector: false
+    use_symfony_listeners: true
+
+    collection:
+        pagination:
+            enabled: true
+            page_parameter_name: page
+            items_per_page_parameter_name: itemsPerPage

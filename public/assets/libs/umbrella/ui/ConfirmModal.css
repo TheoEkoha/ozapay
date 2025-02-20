@@ -1,0 +1,61 @@
+.confirm-modal .modal-dialog {
+  width: 32em;
+}
+.confirm-modal .modal-content {
+  position: relative;
+  box-sizing: border-box;
+  grid-template-columns: minmax(0, 100%);
+  width: 32em;
+  max-width: 100%;
+  padding: 2rem;
+  border: none;
+  border-radius: 5px;
+  background: #fff;
+  color: #545454;
+  font-family: inherit;
+  font-size: 1rem;
+}
+.confirm-modal .modal-content .modal-icon {
+  position: relative;
+  box-sizing: content-box;
+  justify-content: center;
+  width: 5em;
+  height: 5em;
+  margin: 2.5em auto 0.6em;
+  border: 0.25em solid transparent;
+  border-radius: 50%;
+  font-family: inherit;
+  line-height: 5em;
+  cursor: default;
+  user-select: none;
+}
+.confirm-modal .modal-content .modal-icon i {
+  font-size: 5rem;
+}
+.confirm-modal .modal-content .modal-body {
+  max-height: 200px;
+  overflow: auto;
+  font-weight: normal;
+  font-size: 1.1rem;
+  margin-top: 1.5rem;
+  color: var(--kt-gray-800);
+  padding: 0;
+  line-height: normal;
+  text-align: center;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+.confirm-modal .modal-content .modal-footer {
+  margin: 1.5rem auto 0;
+  display: flex;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  padding: 0;
+  border: 0;
+}
+.confirm-modal .modal-content .modal-footer .btn {
+  margin: 15px 5px 0;
+}

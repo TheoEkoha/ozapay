@@ -1,0 +1,24 @@
+.umbrella-toast {
+  display: flex;
+  align-items: center;
+  border-radius: 0.5rem;
+  box-shadow: none;
+}
+.umbrella-toast .umbrella-toast-wrapper {
+  min-width: 150px;
+}
+.umbrella-toast .umbrella-toast-wrapper .umbrella-toast-head {
+  font-weight: bold;
+}
+.umbrella-toast.umbrella-toast-success {
+  background: linear-gradient(135deg, #57c828, #4db223);
+}
+.umbrella-toast.umbrella-toast-error {
+  background: linear-gradient(135deg, #de4251, #da2c3d);
+}
+.umbrella-toast.umbrella-toast-warning {
+  background: linear-gradient(135deg, #f8d93a, #f8d421);
+}
+.umbrella-toast.umbrella-toast-info {
+  background: linear-gradient(135deg, #8175ff, #6a5cff);
+}

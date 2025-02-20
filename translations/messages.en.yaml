@@ -1,0 +1,66 @@
+bonjour: Welcome, name
+Tableau de bord: 'Dashboard'
+Utilisateur: 'User'
+Menu: 'Menu'
+Mail: 'Email'
+Mot de passe: 'Password'
+Se connecter: 'Log In'
+Déconnexion: 'Logout'
+Roles: 'Roles'
+Code: 'Code'
+Nom Complet: 'FullName'
+Prénom: 'First Name'
+Nom: 'Last Name'
+Téléphone: 'Phone'
+Adresse: 'Address'
+Mail de confirmation: 'Confirmation Email'
+Enregistrer: 'Save'
+Modifier: 'Edit'
+Supprimer: 'Delete'
+Administrateur: 'Admininistrator'
+Particulier: 'Particular'
+Professionnel: 'Professional'
+Liste des utilisateurs: 'User list'
+
+email:
+  confirmation:
+    title: "Your email confirmation"
+    welcome: "Welcome to our platform"
+    message: "Your confirmation code is: "
+  complete_registration:
+    title: "Successful creation of your account"
+    welcome: "Welcome to our platform"
+    message: "Your account has been created successfully!"
+  reset_password:
+    title: "Reset your password"
+
+Comptes utilisateurs: 'User accounts'
+Placements cryptos: 'Crypto investments'
+Promotions: 'Promotions'
+Fonctions & Mots-clés: 'Functions & Keywords'
+Notifications: 'Notifications'
+Gestion des offres: 'Offer management'
+Ventes, Cashback & Affiliations: 'Sales, Cashback & Affiliations'
+Challenges: 'Challenges'
+L'utilisateur a été supprimé: 'User has been deleted'
+Profil: 'Profile'
+Ville: 'City'
+Revenir à la liste: 'Back to list'
+Bienvenue: 'Welcome Back'
+Connectez-vous pour continuer à consulter le tableau de bord.: 'Sign in to continue to dashboard.'
+Vous êtes connecté comme: 'You are logged in as'
+Mot de passe oublié: 'Forgot password'
+Se souvenir de moi: 'Remember me'
+Supprimer cet élément: 'Delete this item'
+Aucun utilisateur trouvé: 'No users found'
+Une erreur s’est produite lors de la récupération des données: 'An error occurred while fetching the data'
+Précédent: 'Previous'
+Suivant: 'Next'
+Indiquant: 'Showing'
+Utilisateurs: 'Users'
+Abonnements: 'Subscriptions'
+Stocks OZA: 'OZA Stocks'
+Promotions & Offres: 'Promotions & Offers'
+Détenteurs OZA: 'OZA Regulators'
+Pages et articles: 'Pages and articles'
+Gestion des affiliés: 'Affiliate management'

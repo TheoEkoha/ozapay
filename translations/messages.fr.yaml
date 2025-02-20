@@ -1,0 +1,66 @@
+welcome: Bonjour name
+Dashboard: 'Tableau de bord'
+User: 'Utilisateur'
+Logout: 'Déconnexion'
+Log In: 'Se connecter'
+Menu: 'Menu'
+Email: 'Mail'
+Roles: 'Roles'
+Code: 'Code'
+FullName: 'Nom Complet'
+Password: 'Mot de passe'
+Confirm Password: 'Confirmer le mot de passe'
+Remember Me: 'Se souvenir de moi'
+First Name: 'Prénom'
+Last Name: 'Nom'
+Phone: 'Téléphone'
+Address: 'Adresse'
+Delete: 'Supprimer'
+Administrator: 'Administrateur'
+Particular: 'Particulier'
+Professional: 'Professionnel'
+Confirmation Email: 'Mail de confirmation'
+User list: 'Liste des utilisateurs'
+
+email:
+  confirmation:
+    title: "Confirmation de votre email"
+    welcome: "Bienvenu sur notre polatforme"
+    message: "Votre code de confirmation est: "
+  complete_registration:
+    title: "Réussite de la création de votre compte"
+    welcome: "Bienvenue sur notre polatforme"
+    message: "Votre compte a été créé avec succès!"
+  reset_password:
+    title: "Réinitialisation de votre mot de passe"
+
+User accounts: 'Comptes utilisateurs'
+Crypto investments: 'Placements cryptos'
+Promotions: 'Promotions'
+Functions & Keywords: 'Fonctions & Mots-clés'
+Notifications: 'Notifications'
+Offer management: 'Gestion des offres'
+Sales, Cashback & Affiliations: 'Ventes, Cashback & Affiliations'
+Challenges: 'Challenges'
+User has been deleted: "L'utilisateur a été supprimé"
+Profile: 'Profil'
+City: 'Ville'
+Back to list: 'Revenir à la liste'
+Welcome Back: 'Bienvenue'
+Sign in to continue to dashboard.: 'Connectez-vous pour continuer à consulter le tableau de bord.'
+You are logged in as: 'Vous êtes connecté comme'
+Forgot password: 'Mot de passe oublié'
+Remember me: 'Se souvenir de moi'
+Delete this item: 'Supprimer cet élément'
+No users found: 'Aucun utilisateur trouvé'
+An error occurred while fetching the data: 'Une erreur s’est produite lors de la récupération des données'
+Previous: 'Précédent'
+Next: 'Suivant'
+Showing: 'Indiquant'
+Users: 'Utilisateurs'
+Subscriptions: 'Abonnements'
+OZA Stocks: 'Stocks OZA'
+Promotions & Offers: 'Promotions & Offres'
+OZA Regulators: 'Détenteurs OZA'
+Pages and articles: 'Pages et articles'
+Affiliate management: 'Gestion des affiliés'

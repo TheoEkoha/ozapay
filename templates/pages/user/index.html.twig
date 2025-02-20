@@ -1,0 +1,213 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block title %}{{ 'User list'|trans }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/libs/gridjs/theme/mermaid.min.css') }}">
+{% endblock %}
+
+{% block content %}
+    {#    Initialize the modal component #}
+    {{ component('user_detail_modal') }}
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">{{ 'User list'|trans }} ({{ count_user }})</h4>
+                </div><!-- end card header -->
+                <div class="card-body">
+                    <div id="table-user"></div>
+                </div>
+                <!-- end card body -->
+            </div>
+            <!-- end card -->
+        </div>
+        <!-- end col -->
+    </div>
+    <!-- end row -->
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <!-- gridjs js -->
+    <!-- Add this before your main script -->
+    <script src="https://unpkg.com/libphonenumber-js@1.10.55/bundle/libphonenumber-js.min.js"></script>
+    <script src="{{ asset('assets/libs/gridjs/gridjs.umd.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Role Filter Dropdown
+            const roleFilter = document.getElementById('role-filter');
+            const grid = new gridjs.Grid({
+                columns: [
+                    {
+                        name: 'Id',
+                        sort: true,
+                    },
+                    {
+                        name: '{{ 'First Name'|trans }}',
+                    },
+                    {
+                        name: '{{ 'Last Name'|trans }}',
+                    },
+                    {
+                        name: 'Roles',
+                        sort: false,
+                        formatter: (cell) => {
+                            if (!cell) return '';
+
+                            const badges = cell.split(', ').map(role => {
+                                let badgeClass;
+                                let roleName;
+                                switch (role) {
+                                    case 'ROLE_ADMIN':
+                                        badgeClass = 'bg-danger';
+                                        roleName = '{{ 'Administrator'|trans }}';
+                                        break;
+                                    case 'ROLE_PRO':
+                                        badgeClass = 'bg-success';
+                                        roleName = '{{ 'Professional'|trans }}';
+                                        break;
+                                    case 'ROLE_USER':
+                                        badgeClass = 'bg-info';
+                                        roleName = '{{ 'Particular'|trans }}';
+                                        break;
+                                    default:
+                                        badgeClass = 'bg-info';
+                                        roleName = '{{ 'Particular'|trans }}';
+                                }
+                                return `<span class="badge ${badgeClass}">${roleName}</span>`;
+                            }).join(' ');
+
+                            return gridjs.html(badges);
+                        }
+                    },
+                    {
+                        name: '{{ 'Email'|trans }}',
+                        sort: false,
+                        formatter: (cell) => gridjs.html(`<a href="mailto:${cell}">${cell}</a>`)
+                    },
+                    {
+                        name: '{{ 'Phone'|trans }}',
+                        formatter: (cell) => {
+                            if (!cell) return '';
+
+                            try {
+                                // libphonenumber-js is available as window.libphonenumber
+                                const phoneNumber = libphonenumber.parsePhoneNumber(cell);
+                                if (phoneNumber) {
+                                    return phoneNumber.formatInternational();
+                                }
+                            } catch (error) {
+                                // If parsing fails, return the original number
+                                return cell;
+                            }
+
+                            return cell;
+                        }
+                    },
+                    {
+                        name: 'Actions',
+                        sort: false,
+                        formatter: (_, row) => {
+                            const userId = row.cells[0].data;
+                            const url = "{{ path('admin.user.delete', {'id': '__ID__'}) }}".replace('__ID__', userId);
+                            const profileUrl = "{{ path('admin.user.profile',  {'id': '__ID__'}) }}".replace('__ID__', userId);
+
+                            return gridjs.html(`
+                                <div class="btn-group" role="group">
+                                     <a onclick="return confirm('{{ 'Delete this item'|trans }} ?')" href="${url}"
+                                               class="btn btn-sm btn-danger" title="supprimer">
+                                               <i class="fas fa-trash"></i>
+                                     </a>
+                                    {# <button class="btn btn-sm btn-info" data-xhr="{{ path('admin.user.modal') }}"> #}
+                                    {#    <i class="fas fa-eye"></i> #}
+                                    {# </button> #}
+                                    <button class="btn btn-sm btn-info">
+                                        <a href="${profileUrl}" style="color: white; text-decoration: none; :hover:text-decoration: none;">
+                                         <i class="fas fa-eye"></i>
+                                        </a>
+                                    </button>
+                                </div>
+                        `)
+                        }
+                    }
+                ],
+                server: {
+                    url: '/api/users?status[exact]=PUBLISHED&_step[exact]=pin',
+                    then: data => data['hydra:member'].map(item => [
+                        item.id,
+                        item.firstName ?? '-',
+                        item.lastName ?? '-',
+                        item.roles.join(', '),
+                        item.email ?? '-',
+                        item.phone ?? '-',
+                    ]),
+                    total: data => data['hydra:totalItems']
+                },
+                search: {
+                    enabled: true,
+                    server: {
+                        url: (prev, keyword) => `${prev}&search=${keyword}`
+                    },
+                    debounceTimeout: -1, // This prevents automatic search while typing
+                    plugin: {
+                        hook: (search) => {
+                            search.input.addEventListener('keypress', (e) => {
+                                if (e.key === 'Enter') {
+                                    // Prevent form submission if within a form
+                                    e.preventDefault();
+                                    // Trigger the search
+                                    grid.forceRender();
+                                }
+                            });
+                        }
+                    }
+                },
+                sort: {
+                    enabled: true,
+                },
+                pagination: {
+                    enabled: true,
+                    limit: 10,
+                    server: {
+                        url: (prev, page, limit) => {
+                            // Adjust page number since API Platform uses 1-based indexing
+                            const pageNumber = page + 1;
+                            return `${prev}&page=${pageNumber}&itemsPerPage=${limit}`;
+                        }
+                    }
+                },
+                language: {
+                    loading: 'Loading...',
+                    noRecordsFound: '{{ 'No users found'|trans }}',
+                    error: '{{ 'An error occurred while fetching the data'|trans }}',
+                    pagination: {
+                        previous: '{{ 'Previous'|trans }}',
+                        next: '{{ 'Next'|trans }}',
+                        showing: '{{ 'Showing'|trans }}',
+                        results: () => '{{ 'User'|trans }}'
+                    }
+                },
+                style: {
+                    table: {
+                        width: '100%'
+                    },
+                    th: {
+                        'background-color': '#f8f9fa',
+                        'padding': '12px'
+                    }
+                },
+                className: {
+                    table: 'table table-striped table-bordered',
+                    th: 'text-center',
+                    td: 'align-middle'
+                }
+            });
+            //Render the grid
+            grid.render(document.getElementById("table-user"));
+        });
+    </script>
+{% endblock %}

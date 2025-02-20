@@ -1,0 +1,46 @@
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+/migrations/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
+
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
+node_modules
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
+### idea
+.idea
+.idea/*
+
+### lando
+.lando.yml
+
+### themes
+_keenthemes/tools/node_modules
+_keenthemes/tools/node_modules/*
+/.php-version
+/.idea/
+
+composer.lock
+###phpunit.xml.dist
+symfony.lock
+
+/mcd/ozapay.mwb.bak
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###

@@ -1,0 +1,36 @@
+
+<!doctype html>
+<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable">
+
+    <head>
+        <meta charset="utf-8" />
+        <title>{% block title %}Welcome{% endblock %} | Webadmin - Admin & Dashboard Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
+        <meta content="Themesbrand" name="author" />
+        <!-- App favicon -->
+        <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
+        
+        {% block stylesheets %}{% endblock %}
+        {% include 'layouts/_head-css.html.twig' %}
+    </head>
+
+    <body>
+        {% block body %}
+
+        <!-- Begin page -->
+        <div id="layout-wrapper">
+            <!-- ============================================================== -->
+            <!-- Start right Content here -->
+            <!-- ============================================================== -->
+                    {% block content %}
+                    {% endblock %}
+        </div>
+        <!-- END layout-wrapper -->
+        
+        {% include 'layouts/_vendor-scripts.html.twig' %}
+
+        {% block javascripts %}{% endblock %}
+        {% endblock %}
+    </body>
+</html>

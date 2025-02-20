@@ -1,0 +1,77 @@
+name: Using CI/CD
+
+on:
+  push:
+    branches: [ "preprod", "develop" ]
+  # pull_request:
+    # branches: [ "preprod" ]
+
+# permissions:
+  # contents: read
+
+jobs:
+  build:
+    if: contains(github.ref, 'develop') || contains(github.ref, 'preprod')
+    runs-on: ubuntu-latest
+   
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup PHP with PECL extension
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: imagick, swoole
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      run: composer update
+    
+    - name: download phpfixer
+      run: curl -L https://cs.symfony.com/download/php-cs-fixer-v2.phar -o php-cs-fixer
+    
+    - name: chmod a+x tools/php-cs-fixer/vendor/bin/php-cs-fixer
+      run: chmod a+x tools/php-cs-fixer/vendor/bin/php-cs-fixer
+
+    - name:  php-cs-fixer analyse
+      run: ./tools/php-cs-fixer/vendor/bin/php-cs-fixer fix src
+
+    - name: phpstan analyse 
+      run: php -d memory_limit=-1 vendor/bin/phpstan analyse src --level 5
+
+    - name: test with phpunit
+      run: php -d memory_limit=-1 vendor/bin/phpunit
+
+  deploy:
+    if: contains(github.ref, 'preprod')
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: executing remote ssh commands using password 
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ vars.SSH_HOST }}
+        username: ${{ vars.SSH_USERNAME }}
+        password: ${{ vars.SSH_PASSWORD }} 
+        port: 2048
+        script: |
+          whoami
+          cd /var/www/my-preprod/php82/ozapay/srcs
+          git pull
+          rm -Rf composer.lock
+          php8.2 /usr/local/bin/composer install
+          php8.2 bin/console assets:install
+          rm -Rf var/cache/*
+          rm -Rf migrations/*
+          php8.2 bin/console make:migration
+          echo yes
+          php8.2 bin/console doctrine:migrations:migrate
+          echo yes
+

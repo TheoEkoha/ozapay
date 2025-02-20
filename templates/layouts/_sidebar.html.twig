@@ -1,0 +1,103 @@
+<!-- ========== Left Sidebar Start ========== -->
+<div class="vertical-menu">
+
+    <!-- LOGO -->
+    <div class="navbar-brand-box">
+        <a href="{{ path('dashboard') }}" class="logo logo-dark">
+            <span class="logo-sm">
+                <img src="{{ asset('assets/images/logo-dark-sm.png') }}" alt="" height="26">
+            </span>
+            <span class="logo-lg">
+                <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="28">
+            </span>
+        </a>
+
+        <a href="" class="logo logo-light">
+            <span class="logo-lg">
+                <img src="{{ asset('assets/images/logo-light.png') }}" alt="" height="30">
+            </span>
+            <span class="logo-sm">
+                <img src="{{ asset('assets/images/logo-light-sm.png') }}" alt="" height="26">
+            </span>
+        </a>
+    </div>
+
+    <button type="button" class="btn btn-sm px-3 font-size-24 header-item waves-effect vertical-menu-btn">
+        <i class="bx bx-menu align-middle"></i>
+    </button>
+
+    <div data-simplebar class="sidebar-menu-scroll">
+
+        <!--- Sidemenu -->
+        <div id="sidebar-menu">
+            <!-- Left Menu Start -->
+            <ul class="metismenu list-unstyled" id="side-menu">
+                <li class="menu-title"><span data-key="t-dashboards">{{ 'Dashboard'|trans }}</span></li>
+                <li class="{{ is_active(['dashboard']) }}">
+                    <a href="{{ path('dashboard') }}">
+                        <i class="bx bx-home-alt icon nav-icon"></i>
+                        <span class="menu-item"><span data-key="t-dashboards">{{ 'Dashboard'|trans }}</span></span>
+                    </a>
+                </li>
+
+                <li class="menu-title" data-key="t-applications">{{ 'User accounts'|trans }}</li>
+                <li class="{{ is_active(['admin.user.list']) }}">
+                    <a href="{{ path('admin.user.list') }}">
+                        <i class="bx bx-male icon nav-icon"></i>
+                        <span class="menu-item">{{ 'User accounts'|trans }}</span>
+                    </a>
+                </li>
+                <li class="{{ is_active(['#']) }}">
+                    <a href="#">
+                        <i class="bx bx-analyse icon nav-icon"></i>
+                        <span class="menu-item">{{ 'Subscriptions'|trans }}</span>
+                    </a>
+                </li>
+                <li class="{{ is_active(['#']) }}">
+                    <a href="#">
+                        <i class="bx bx-book icon nav-icon"></i>
+                        <span class="menu-item">{{ 'Affiliate management'|trans }}</span>
+                    </a>
+                </li>
+                <li class="{{ is_active(['#']) }}">
+                    <a href="#">
+                        <i class="bx bx-archive icon nav-icon"></i>
+                        <span class="menu-item">{{ 'Pages and articles'|trans }}</span>
+                    </a>
+                </li>
+                <li class="{{ is_active(['#']) }}">
+                    <a href="#">
+                        <i class="bx bx-money icon nav-icon"></i>
+                        <span class="menu-item">{{ 'OZA Regulators'|trans }}</span>
+                    </a>
+                </li>
+                 <li class="{{ is_active(['#']) }}">
+                    <a href="#">
+                        <i class="bx bx-gift icon nav-icon"></i>
+                        <span class="menu-item">{{ 'Challenges' }}</span>
+                    </a>
+                </li>
+                <li class="{{ is_active(['#']) }}">
+                    <a href="#">
+                        <i class="bx bx-package icon nav-icon"></i>
+                        <span class="menu-item">{{ 'Promotions & Offers'|trans }}</span>
+                    </a>
+                </li>
+                <li class="{{ is_active(['#']) }}">
+                    <a href="#">
+                        <i class="bx bx-bell icon nav-icon"></i>
+                        <span class="menu-item">{{ 'Notifications'|trans }}</span>
+                    </a>
+                </li>
+                <li class="{{ is_active(['#']) }}">
+                    <a href="#">
+                        <i class="bx bx-bitcoin icon nav-icon"></i>
+                        <span class="menu-item">{{ 'OZA Stocks'|trans }}</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!-- Sidebar -->
+    </div>
+</div>
+<!-- Left Sidebar End -->

@@ -1,0 +1,6 @@
+home_recipe_count: >-
+  { count, plural,
+    =0   {Aucune pomme}
+    =1   {Une pomme compté}
+    other    {# pommes comptées}
+  }

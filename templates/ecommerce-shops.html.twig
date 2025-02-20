@@ -1,0 +1,36 @@
+{% extends 'layouts/base.html.twig' %}
+{% block title %}Shops{% endblock %}
+
+{% block stylesheets %}
+<!-- gridjs styles -->
+        <link rel="stylesheet" href="assets/libs/gridjs/theme/mermaid.min.css">
+{% endblock %}
+
+
+{% block content %}
+
+
+{% include 'layouts/_topbar.html.twig' with {title:  'Shops' } %}
+        
+                        <div class="row">
+                            <div class="col-xl-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div id="table-ecommerce-shops"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end row -->
+                       
+
+{% endblock %}
+           
+{% block javascripts %}
+        <!-- gridjs js -->
+        <script src="assets/libs/gridjs/gridjs.umd.js"></script>
+
+        <script src="assets/js/pages/ecommerce-shops.init.js"></script>
+
+        <script src="assets/js/app.js"></script>
+{% endblock %}
