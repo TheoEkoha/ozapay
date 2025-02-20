@@ -206,8 +206,25 @@ public function edit(User $user, Request $request): User
             $this->handlePinUpdate($user, $data['pin']);
         }
 
-        // Mise à jour des autres champs
-        $this->updateUserFields($user, $data);
+        $dataArray = $request->toArray(); // Récupère les données de la requête
+
+        $fieldsToUpdate = [
+            'firstName' => 'setFirstName',
+            'lastName' => 'setLastName',
+            'code' => 'setCode',
+            'address' => 'setAddress',
+            'postalCode' => 'setPostalCode',
+            'city' => 'setCity',
+            'role' => 'setRole',
+            'conditionAccepted' => 'setConditionAccepted',
+            'marketingAccepted' => 'setMarketingAccepted',
+        ];
+    
+        foreach ($fieldsToUpdate as $field => $method) {
+            if (isset($dataArray[$field]) && $dataArray[$field] !== $user->{'get' . ucfirst($field)}()) {
+                $user->{$method}($dataArray[$field]);
+            }
+        }
 
         // Gérer l'étape si spécifiée
         if (isset($data['_step'])) {
@@ -216,6 +233,8 @@ public function edit(User $user, Request $request): User
 
         $this->em->persist($user);
         $this->em->flush();
+        $this->repository->save($user);
+
 
         return $user;
     } catch (Exception $e) {

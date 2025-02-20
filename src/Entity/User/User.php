@@ -1053,5 +1053,5 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->setPin((string)$hashedPin)
              ->setGeneratedPassUpdated(false)
              ->setGeneratedPassExpired($dateFinal);
-    }
+    
 }
