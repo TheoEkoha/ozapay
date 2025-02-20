@@ -36,6 +36,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 readonly class UserService extends UserCommonService
 {
+    private PsrLoggerInterface $logger;
+
     public function __construct(
         SerializerInterface                   $serializer,
         private UserRepository                $repository,
@@ -51,6 +53,7 @@ readonly class UserService extends UserCommonService
         private DataEncryption                $dataEncryption
     )
     {
+        $this->logger = $logger;
         parent::__construct($serializer, $sms, $em, $mailerService);
     }
 
