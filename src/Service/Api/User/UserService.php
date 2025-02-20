@@ -229,22 +229,17 @@ public function edit(User $user, Request $request): User
 
 private function handlePhoneUpdate(User $user, string $phone, ?string $signature): void
 {
-    // Vérifie si le numéro de téléphone commence par '06'
     if (preg_match('/^06/', $phone)) {
-        // Remplace '06' par '+33 6'
         $phone = preg_replace('/^06/', '+33 6', $phone);
     } elseif (!preg_match('/^\+33 6/', $phone)) {
-        // Si le numéro ne commence pas par '+33 6', on peut éventuellement le formater ou gérer une erreur
         throw new Exception("Invalid phone number format. Please use a valid French number starting with '06'.", Response::HTTP_BAD_REQUEST);
     }
 
-    // Vérifie si le numéro est différent de celui de l'utilisateur
     if ($user->getPhone() !== $phone) {
-        // Met à jour le numéro de téléphone
         $user->setPhone($phone);
         $this->repository->save($user);
-        
-        // Envoie le code SMS
+
+        // Appelle sendSMSCode sans avoir besoin de vérifier $signature ici
         $this->sendSMSCode($user, $phone, VerificationConstant::SIGN_UP_VER, $signature);
     }
 }

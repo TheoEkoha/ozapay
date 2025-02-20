@@ -47,13 +47,16 @@ abstract readonly class UserCommonService extends BaseService
      * @throws NonUniqueResultException
      * @throws \Exception
      */
-    public function sendSMSCode(User $user, string $phone, string $for, string $signature): void
+    public function sendSMSCode(User $user, string $phone, string $for, ?string $signature = 'default_signature'): void
     {
         if ($this->existValidation($user, $this->code, VerificationTypeConstant::TYPE_SMS)) {
             throw new \Exception(ErrorsConstant::VALIDATION_EXIST);
         }
-
-        $this->sms->sendSms($phone, (string)$this->code, $signature);
+    
+        // Si $signature est null, utilise la valeur par défaut
+        $signatureToUse = $signature ?? 'default_signature'; // Remplace 'default_signature' par la valeur souhaitée
+    
+        $this->sms->sendSms($phone, (string)$this->code, $signatureToUse);
         $this->createVerificationCode($user, $this->code, VerificationTypeConstant::TYPE_SMS, $for);
     }
 
