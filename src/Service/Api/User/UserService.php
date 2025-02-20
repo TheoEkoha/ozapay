@@ -229,19 +229,23 @@ public function edit(User $user, Request $request): User
 
 private function handlePhoneUpdate(User $user, string $phone, ?string $signature): void
 {
-    // Vérifie si le numéro de téléphone est différent de celui de l'utilisateur
+    // Vérifie si le numéro de téléphone commence par '06'
+    if (preg_match('/^06/', $phone)) {
+        // Remplace '06' par '+33 6'
+        $phone = preg_replace('/^06/', '+33 6', $phone);
+    } elseif (!preg_match('/^\+33 6/', $phone)) {
+        // Si le numéro ne commence pas par '+33 6', on peut éventuellement le formater ou gérer une erreur
+        throw new Exception("Invalid phone number format. Please use a valid French number starting with '06'.", Response::HTTP_BAD_REQUEST);
+    }
+
+    // Vérifie si le numéro est différent de celui de l'utilisateur
     if ($user->getPhone() !== $phone) {
-        // Vérifie si le téléphone existe déjà dans la base de données
-        if ($this->repository->findOneBy(['phone' => $phone])) {
-            throw new Exception(ErrorsConstant::PHONE_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-        }
-
-        // Met à jour le numéro de téléphone de l'utilisateur
+        // Met à jour le numéro de téléphone
         $user->setPhone($phone);
-
-        // Envoie le code SMS pour la vérification
-        // Si $signature est null, tu peux soit passer une chaîne vide, soit gérer ce cas dans la méthode sendSMSCode
-        $this->sendSMSCode($user, $phone, VerificationConstant::SIGN_UP_VER, $signature ?? '');
+        $this->repository->save($user);
+        
+        // Envoie le code SMS
+        $this->sendSMSCode($user, $phone, VerificationConstant::SIGN_UP_VER, $signature);
     }
 }
 

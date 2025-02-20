@@ -601,17 +601,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setPhone(?string $phone): static
     {
-
-        $new_phone;
-        if (strpos($phone, '0') === 0) {
-            // Remplace le premier '0' par '+33'
-            $new_phone = '+33' . substr($phone, 1);
-        } else {
-            // Si le numéro est déjà au format international, tu peux le garder tel quel
-            $new_phone = $phone;
-        }
-
-        $this->phone = $new_phone;
+        $this->phone = $phone;
 
         return $this;
     }
