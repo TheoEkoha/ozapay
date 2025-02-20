@@ -313,9 +313,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 #[ORM\Table(name: '`user`')]
 //#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email', 'phone'])]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['phone'])]
+//#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['phone'])]
 //#[UniqueEntity(fields: ['email', 'phone'])]
-#[UniqueEntity(fields: ['phone'])]
+//#[UniqueEntity(fields: ['phone'])]
 #[ORM\HasLifecycleCallbacks]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
