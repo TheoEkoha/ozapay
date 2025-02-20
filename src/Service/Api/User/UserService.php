@@ -249,7 +249,12 @@ readonly class UserService extends UserCommonService
             }
 
             $this->em->persist($user);
-            $this->em->flush();
+            try {
+                $this->em->flush(); // Ou toute autre opération de mise à jour
+            } catch (\Doctrine\DBAL\Exception $e) {
+                error_log('Erreur lors de la mise à jour: ' . $e->getMessage());
+                // Gérer l'erreur (ex. retour d'une réponse d'erreur)
+            }
 
             return $user;
         } catch (Exception $e) {
