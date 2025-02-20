@@ -191,7 +191,7 @@ readonly class UserService extends UserCommonService
             $signature = '';
             $data = $this->getPostedData($request);
             error_log(print_r($request->request->all(), true));
-            $logger->info('Données de requête:', $request->request->all());
+            $this->logger->info('Données de requête:', $request->request->all());
 
             if (array_key_exists('phone', $data)) {
                 if (array_key_exists('appSignature', $data)) {
