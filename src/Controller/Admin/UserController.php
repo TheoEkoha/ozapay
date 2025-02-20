@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 
-#[Route('/api/admin/users', name: 'api.admin.user.')]
+#[Route('/api/users', name: 'api.user.')]
 //#[Route('/admin/users', name: 'admin.user.')]dfqfsf
 class UserController extends AbstractController
 {
