@@ -240,7 +240,8 @@ private function handlePhoneUpdate(User $user, string $phone, ?string $signature
         $user->setPhone($phone);
 
         // Envoie le code SMS pour la vérification
-        $this->sendSMSCode($user, $phone, VerificationConstant::SIGN_UP_VER, $signature);
+        // Si $signature est null, tu peux soit passer une chaîne vide, soit gérer ce cas dans la méthode sendSMSCode
+        $this->sendSMSCode($user, $phone, VerificationConstant::SIGN_UP_VER, $signature ?? '');
     }
 }
 
