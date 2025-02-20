@@ -356,4 +356,28 @@ readonly class UserService extends UserCommonService
     }
 
 
+    /**
+     * @throws JsonException
+     */
+    public function updateUser(User $user, array $data): void
+    {
+        if (isset($data['firstName'])) {
+            $user->setFirstName($data['firstName']);
+        }
+        if (isset($data['lastName'])) {
+            $user->setLastName($data['lastName']);
+        }
+        if (isset($data['email'])) {
+            $user->setEmail($data['email']);
+        }
+        if (isset($data['roles'])) {
+            $user->setRoles($data['roles']);
+        }
+        if (isset($data['phone'])) {
+            $user->setPhone($data['phone']);
+        }
+
+        $this->em->persist($user);
+        $this->em->flush();
+    }
 }

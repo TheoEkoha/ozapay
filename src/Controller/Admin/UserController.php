@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Common\Constants\Response\ErrorsConstant;
+use App\Service\UserService;
 use App\Common\Constants\Response\SuccessResponse;
 use App\Entity\Enum\Status;
 use App\Entity\Enum\Step;
@@ -28,6 +29,7 @@ class UserController extends AbstractAdminController
         private readonly UserRepository $repository,
         protected TranslatorInterface   $translator,
         private EntityManagerInterface  $em,
+        private UserService $userService,
     ) {
     }
 
@@ -50,6 +52,20 @@ class UserController extends AbstractAdminController
         ]);
     }
 
+
+    #[Route('/{id}/edit', name: 'edit', methods: ['POST'])]
+    public function update(Request $request, User $user): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data) {
+            return new JsonResponse(['error' => 'Invalid data'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $this->userService->updateUser($user, $data);
+
+        return new JsonResponse(['message' => 'User updated successfully']);
+    }
 
     #[Route('/{id}', name: 'profile', methods: ['GET'])]
     public function profile(User $user): Response
