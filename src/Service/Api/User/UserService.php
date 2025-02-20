@@ -51,10 +51,12 @@ readonly class UserService extends UserCommonService
         private Tools                         $tools,
         private Security                      $security,
         private DataEncryption                $dataEncryption
-    )
-    {
-        parent::__construct($logger, $serializer, $sms, $em, $mailerService);
+    ) {
+        parent::__construct($serializer, $sms, $em, $mailerService);
         $this->logger = $logger;
+
+        // Assurez-vous de passer le serializer correct ici
+        $this->userCommonService = new UserCommonService($serializer, $this->repository, $this->tokenGenerator, $mailerService, $this->em, $this->passwordHasher, $this->logger, $sms, $this->authService, $this->tools, $this->security, $this->dataEncryption);
     }
 
     /**
