@@ -201,14 +201,29 @@ readonly class UserService extends UserCommonService
                 $this->sendSMSCode($user, $data['phone'], VerificationConstant::SIGN_UP_VER, $signature);
             }
 
-            if (array_key_exists('email', $data)) {
-                $user->setEmail($data['email']);
-                if (!empty($this->repository->findOneBy(['email' => $data['email']]))) {
-                    throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-                }
+            // if (array_key_exists('email', $data)) {
+            //     $user->setEmail($data['email']);
+            //     if (!empty($this->repository->findOneBy(['email' => $data['email']]))) {
+            //         throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+            //     }
 
-                // validate by email
-                $this->sendMailCode($user, $data['email'], VerificationConstant::SIGN_UP_VER);
+            //     // validate by email
+            //     $this->sendMailCode($user, $data['email'], VerificationConstant::SIGN_UP_VER);
+            // }
+            if (array_key_exists('email', $data)) {
+                $newEmail = $data['email'];
+                if ($newEmail !== $user->getEmail()) {
+                    $user->setEmail($newEmail);
+                    
+                    // Vérifiez si l'email existe déjà, mais ignorez l'utilisateur actuel
+                    $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
+                    if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                        throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+                    }
+            
+                    // Envoyez le code de validation uniquement si l'email a changé
+                    $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
+                }
             }
 
             if (array_key_exists('pin', $data) && $data['_step'] === 'pin') {
