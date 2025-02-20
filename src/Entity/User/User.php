@@ -112,6 +112,11 @@ use Symfony\Component\Validator\Constraints as Assert;
             controller: EditController::class,
             denormalizationContext: ['groups' => ['user:write', 'user:pro:write', 'user:part:write']]
         ),
+        new Put(
+            uriTemplate: '/user/{id}', // Utiliser la même URI que pour le PATCH
+            controller: EditController::class,
+            denormalizationContext: ['groups' => ['user:write', 'user:pro:write', 'user:part:write']]
+        ),
         new Patch(
             uriTemplate: '/user/new/pass',
             controller: RenewPasswordController::class,
