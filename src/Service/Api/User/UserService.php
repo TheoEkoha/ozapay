@@ -53,7 +53,7 @@ readonly class UserService extends UserCommonService
         private DataEncryption                $dataEncryption
     )
     {
-        parent::__construct($serializer, $sms, $em, $mailerService);
+        parent::__construct($logger, $serializer, $sms, $em, $mailerService);
         $this->logger = $logger;
     }
 
