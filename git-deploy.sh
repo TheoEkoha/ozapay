@@ -22,4 +22,4 @@ git add .
 git commit -m "fix: $NEW_COMMIT_NUMBER - PUT /user"
 
 # Ajoute les autres commandes nécessaires ici (comme le push)
-# git push origin main
+git push origin main
