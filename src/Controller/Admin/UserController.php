@@ -50,17 +50,17 @@ class UserController extends AbstractAdminController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'edit', methods: ['POST'])]
-    public function update(Request $request, User $user): User
-    {
-        $data = json_decode($request->getContent(), true);
+    // #[Route('/{id}/edit', name: 'edit', methods: ['POST'])]
+    // public function update(Request $request, User $user): User
+    // {
+    //     $data = json_decode($request->getContent(), true);
 
-        if (!$data) {
-            return new JsonResponse(['error' => 'Invalid data'], Response::HTTP_BAD_REQUEST);
-        }
+    //     if (!$data) {
+    //         return new JsonResponse(['error' => 'Invalid data'], Response::HTTP_BAD_REQUEST);
+    //     }
 
-        return $this->userService->updateUser($user, $data);
-    }
+    //     return $this->userService->updateUser($user, $data);
+    // }
 
     #[Route('/{id}', name: 'profile', methods: ['GET'])]
     public function profile(User $user): Response
