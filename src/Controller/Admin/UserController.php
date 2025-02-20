@@ -54,17 +54,17 @@ class UserController extends AbstractAdminController
 
 
     #[Route('/{id}/edit', name: 'edit', methods: ['POST'])]
-    public function update(Request $request, User $user): JsonResponse
+    public function update(Request $request, User $user): Response
     {
         $data = json_decode($request->getContent(), true);
 
         if (!$data) {
-            return new JsonResponse(['error' => 'Invalid data'], Response::HTTP_BAD_REQUEST);
+            return new Response(['error' => 'Invalid data'], Response::HTTP_BAD_REQUEST);
         }
 
         $this->userService->updateUser($user, $data);
 
-        return new JsonResponse(['message' => 'User updated successfully']);
+        return new Response(['message' => 'User updated successfully']);
     }
 
     #[Route('/{id}', name: 'profile', methods: ['GET'])]
