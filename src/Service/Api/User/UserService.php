@@ -188,26 +188,6 @@ readonly class UserService extends UserCommonService
             // Initialisation de la variable signature
             $signature = '';
             $data = $this->getPostedData($request);
-    
-            // Vérification et mise à jour de l'email
-            if (isset($data['email'])) {
-                $newEmail = $data['email'];
-    
-                // Vérifiez si l'email a changé
-                if ($newEmail !== $user->getEmail()) {
-                    $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
-    
-                    // Si l'email existe déjà et n'appartient pas à l'utilisateur courant
-                    if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                        throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-                    }
-    
-                    // Si l'email est disponible, mettez à jour l'utilisateur
-                    $user->setEmail($newEmail);
-                }
-            }
-    
-            // Autres mises à jour de l'utilisateur
             if (array_key_exists('phone', $data)) {
                 $user->setPhone($data['phone']);
                 if (array_key_exists('appSignature', $data)) {
@@ -221,7 +201,47 @@ readonly class UserService extends UserCommonService
                 $this->sendSMSCode($user, $data['phone'], VerificationConstant::SIGN_UP_VER, $signature);
             }
     
-            // Autres champs utilisateur
+            // Vérification et mise à jour de l'email
+            if (isset($data['email'])) {
+                $newEmail = $data['email'];
+    
+                if ($newEmail !== $user->getEmail()) {
+                    $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
+                    
+                    if (!$existingUser) {
+                        $user->setEmail($newEmail);
+
+                    }
+                    if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                        throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+                    }
+                    
+                    
+                    // Envoyez le code de validation par email seulement si l'utilisateur est nouveau
+                    if ($user->getId() === null) {
+                        $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
+                    }
+                }
+            }
+    
+            // Gérer le code PIN
+            if (array_key_exists('pin', $data) && $data['_step'] === 'pin') {
+                $generatedPassword = $this->tools->generateRandomString();
+                $user->setPassword($this->passwordHasher->hashPassword($user, $generatedPassword));
+    
+                $hashedPin = $this->dataEncryption->encrypt($data['pin']);
+                $date = new \DateTimeImmutable();
+                $dateTimezone = $date->setTimezone(new \DateTimeZone('UTC'));
+                $dateFinal = $dateTimezone->add(new \DateInterval('PT30M'));
+    
+                $user
+                    ->setPin((string)$hashedPin)
+                    ->setGeneratedPassUpdated(false)
+                    ->setGeneratedPassExpired($dateFinal);
+    
+                $this->mailerService->sendWelcomeAfterRegistration($user, $generatedPassword);
+            }
+    
             $user
                 ->setCity($data['city'] ?? null)
                 ->setCountry($data['country'] ?? null)
@@ -240,12 +260,15 @@ readonly class UserService extends UserCommonService
             }
     
             $this->em->persist($user);
-            $this->em->flush();
+            try {
+                $this->em->flush();
+            } catch (\Doctrine\DBAL\Exception $e) {
+                error_log('Erreur lors de la mise à jour: ' . $e->getMessage());
+            }
     
             return $user;
         } catch (Exception $e) {
-            // Renvoie une réponse JSON en cas d'erreur
-            return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
+            throw $e;
         }
     }
 
