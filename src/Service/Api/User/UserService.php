@@ -183,87 +183,96 @@ readonly class UserService extends UserCommonService
      * @throws \Exception
      */
     public function edit(User $user, Request $request)
-{
-    try {
-        // Initialisation de la variable signature
-        $signature = '';
-        $data = $this->getPostedData($request);
-
-        if (array_key_exists('phone', $data)) {
-            $user->setPhone($data['phone']);
-            if (array_key_exists('appSignature', $data)) {
-                $signature = $data['appSignature'];
-            }
-            if (!empty($this->repository->findOneBy(['phone' => $data['phone']]))) {
-                throw new Exception(ErrorsConstant::PHONE_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-            }
-
-            // validate by phone
-            $this->sendSMSCode($user, $data['phone'], VerificationConstant::SIGN_UP_VER, $signature);
-        }
-
-        // Vérification et mise à jour de l'email
-        if (isset($data['email'])) {
-            $newEmail = $data['email'];
-
-            // Vérifiez si l'email a changé
-            if ($newEmail !== $user->getEmail()) {
-                $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
-                
-                if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                    throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-                }
-                
-                $user->setEmail($newEmail);
-                // Suppression de l'envoi de code de validation par email
-            }
-        }
-
-        // Gérer le code PIN
-        if (array_key_exists('pin', $data) && $data['_step'] === 'pin') {
-            $generatedPassword = $this->tools->generateRandomString();
-            $user->setPassword($this->passwordHasher->hashPassword($user, $generatedPassword));
-
-            $hashedPin = $this->dataEncryption->encrypt($data['pin']);
-            $date = new \DateTimeImmutable();
-            $dateTimezone = $date->setTimezone(new \DateTimeZone('UTC'));
-            $dateFinal = $dateTimezone->add(new \DateInterval('PT30M'));
-
-            $user
-                ->setPin((string)$hashedPin)
-                ->setGeneratedPassUpdated(false)
-                ->setGeneratedPassExpired($dateFinal);
-        }
-
-        $user
-            ->setCity($data['city'] ?? null)
-            ->setCountry($data['country'] ?? null)
-            ->setPOstalCode($data['postalCode'] ?? null)
-            ->setDenomination($data['denomination'] ?? null)
-            ->setSiret($data['siret'] ?? null)
-            ->setHasWallet($data['hasWallet'] ?? false);
-
-        if (array_key_exists('_step', $data)) {
-            try {
-                $stepValue = Step::from($data['_step']);
-                // $user->setStep($stepValue);
-            } catch (\ValueError $e) {
-                throw new \Exception(ErrorsConstant::STEP_INVALID, Response::HTTP_BAD_REQUEST);
-            }
-        }
-
-        $this->em->persist($user);
+    {
         try {
-            $this->em->flush();
-        } catch (\Doctrine\DBAL\Exception $e) {
-            error_log('Erreur lors de la mise à jour: ' . $e->getMessage());
-        }
+            // Initialisation de la variable signature
+            $signature = '';
+            $data = $this->getPostedData($request);
+            return JsonResponse(print_r($data, true));
+            if (array_key_exists('phone', $data)) {
+                $user->setPhone($data['phone']);
+                if (array_key_exists('appSignature', $data)) {
+                    $signature = $data['appSignature'];
+                }
+                if (!empty($this->repository->findOneBy(['phone' => $data['phone']]))) {
+                    throw new Exception(ErrorsConstant::PHONE_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+                }
+    
+                // validate by phone
+                $this->sendSMSCode($user, $data['phone'], VerificationConstant::SIGN_UP_VER, $signature);
+            }
+    
+            // Vérification et mise à jour de l'email
+            if (isset($data['email'])) {
+                $newEmail = $data['email'];
+    
+                // Vérifiez si l'email a changé
+                if ($newEmail !== $user->getEmail()) {
+                    $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
+                    
+                    if (!$existingUser) {
+                        $user->setEmail($newEmail);
 
-        return new JsonResponse($user); // Retourne l'utilisateur sous forme de réponse JSON
-    } catch (Exception $e) {
-        return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST); // Retourne l'erreur sous forme de réponse JSON
+                    }
+                    // if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                    //     throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+                    // }
+                    
+                    
+                    // Envoyez le code de validation par email seulement si l'utilisateur est nouveau
+                    if ($user->getId() === null) {
+                        $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
+                    }
+                }
+            }
+    
+            // Gérer le code PIN
+            if (array_key_exists('pin', $data) && $data['_step'] === 'pin') {
+                $generatedPassword = $this->tools->generateRandomString();
+                $user->setPassword($this->passwordHasher->hashPassword($user, $generatedPassword));
+    
+                $hashedPin = $this->dataEncryption->encrypt($data['pin']);
+                $date = new \DateTimeImmutable();
+                $dateTimezone = $date->setTimezone(new \DateTimeZone('UTC'));
+                $dateFinal = $dateTimezone->add(new \DateInterval('PT30M'));
+    
+                $user
+                    ->setPin((string)$hashedPin)
+                    ->setGeneratedPassUpdated(false)
+                    ->setGeneratedPassExpired($dateFinal);
+    
+                $this->mailerService->sendWelcomeAfterRegistration($user, $generatedPassword);
+            }
+    
+            $user
+                ->setCity($data['city'] ?? null)
+                ->setCountry($data['country'] ?? null)
+                ->setPOstalCode($data['postalCode'] ?? null)
+                ->setDenomination($data['denomination'] ?? null)
+                ->setSiret($data['siret'] ?? null)
+                ->setHasWallet($data['hasWallet'] ?? false);
+    
+            if (array_key_exists('_step', $data)) {
+                try {
+                    $stepValue = Step::from($data['_step']);
+                    // $user->setStep($stepValue);
+                } catch (\ValueError $e) {
+                    throw new \Exception(ErrorsConstant::STEP_INVALID, Response::HTTP_BAD_REQUEST);
+                }
+            }
+    
+            $this->em->persist($user);
+            try {
+                $this->em->flush();
+            } catch (\Doctrine\DBAL\Exception $e) {
+                error_log('Erreur lors de la mise à jour: ' . $e->getMessage());
+            }
+    
+            return $user;
+        } catch (Exception $e) {
+            throw $e;
+        }
     }
-}
 
     /**
      * @throws RandomException
