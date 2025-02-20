@@ -218,10 +218,10 @@ readonly class UserService extends UserCommonService
                     // Cherchez un utilisateur avec le même email dans la base de données
                     $existingUser = $this->repository->findOneBy(['email' => $newEmail]);
                     
-                    // Si un autre utilisateur existe avec ce même email, lancez une exception
-                    if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                        throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
-                    }
+                    // // Si un autre utilisateur existe avec ce même email, lancez une exception
+                    // if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                    //     throw new Exception(ErrorsConstant::EMAIL_ALREADY_EXIST, Response::HTTP_ALREADY_REPORTED);
+                    // }
                     
                     // Si l'email est valide et n'existe pas, mettez à jour l'email de l'utilisateur
                     $user->setEmail($newEmail);
