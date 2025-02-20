@@ -188,7 +188,8 @@ readonly class UserService extends UserCommonService
             // Initialisation de la variable signature
             $signature = '';
             $data = $this->getPostedData($request);
-    
+            return new JsonResponse($data);
+
             if (array_key_exists('phone', $data)) {
                 $user->setPhone($data['phone']);
                 if (array_key_exists('appSignature', $data)) {
