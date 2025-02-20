@@ -204,7 +204,7 @@ readonly class UserService extends UserCommonService
             }
     
             // Vérification et mise à jour de l'email
-            if (array_key_exists('email', $data)) {
+            if (isset($data['email'])) {
                 $newEmail = $data['email'];
     
                 // Vérifiez si l'email a changé
