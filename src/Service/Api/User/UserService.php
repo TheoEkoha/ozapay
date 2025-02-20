@@ -182,7 +182,7 @@ readonly class UserService extends UserCommonService
     /**
      * @throws \Exception
      */
-    public function edit(User $user, Request $request): User
+    public function edit(User $user, Request $request)
     {
         try {
             // Initialisation de la variable signature
