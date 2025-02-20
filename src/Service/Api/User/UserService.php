@@ -36,7 +36,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 readonly class UserService extends UserCommonService
 {
-    private PsrLoggerInterface $logger;
+    private LoggerInterface $logger;
 
     public function __construct(
         SerializerInterface                   $serializer,
