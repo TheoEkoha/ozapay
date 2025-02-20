@@ -53,4 +53,24 @@ class UserController extends AbstractController
 
         return $this->json(['message' => 'User deleted successfully']);
     }
+
+    #[Route('/{id}/edit', name: 'edit', methods: ['PUT'])]
+    public function update(Request $request, User $user): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        // Assurez-vous que les données sont valides
+        if (!isset($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            return new JsonResponse(['error' => 'Invalid email'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Mettre à jour les informations de l'utilisateur
+        $user->setEmail($data['email']);
+
+        // Si vous avez d'autres champs à mettre à jour, ajoutez-les ici
+
+        $this->em->flush();
+
+        return $this->json(['message' => 'User updated successfully']);
+    }
 }
