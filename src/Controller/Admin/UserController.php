@@ -10,19 +10,18 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 
 #[Route('/api/users', name: 'api.user.')]
-//#[Route('/admin/users', name: 'admin.user.')]dfqfsf
 class UserController extends AbstractController
 {
     public function __construct(
         private readonly UserRepository $repository,
-        private EntityManagerInterface  $em,
+        private EntityManagerInterface $em,
     ) {}
 
     #[Route('/', name: 'list', methods: ['GET'])]
     public function index(): JsonResponse
     {
         $users = $this->repository->findAll();
-        
+
         $data = array_map(fn(User $user) => [
             'id' => $user->getId(),
             'email' => $user->getEmail(),
@@ -58,16 +57,25 @@ class UserController extends AbstractController
     #[Route('/{id}/edit', name: 'edit', methods: ['PUT'])]
     public function update(Request $request, User $user): JsonResponse
     {
+        $data = json_decode($request->getContent(), true); // Décodage du corps de la requête
+
         if (isset($data['email'])) {
             $user->setEmail($data['email']);
         }
-    
+
         if (isset($data['status'])) {
             $user->setStatus($data['status']);
         }
-    
+
         $this->em->flush();
-    
-        return new JsonResponse(['message' => 'User updated successfully'], Response::HTTP_OK);
+
+        return new JsonResponse(['message' => 'User updated successfully'], JsonResponse::HTTP_OK);
+    }
+
+    // Nouvelle route pour la liste des utilisateurs sur /admin/users
+    #[Route('/admin/users', name: 'admin.list', methods: ['GET'])]
+    public function adminIndex(): JsonResponse
+    {
+        return $this->index(); // Réutilise la méthode index pour éviter la duplication
     }
 }
