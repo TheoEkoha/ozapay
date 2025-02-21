@@ -72,6 +72,7 @@ class UserController extends AbstractController
         return new JsonResponse(['message' => 'User updated successfully'], JsonResponse::HTTP_OK);
     }
 
+    // Nouvelle route pour la liste des utilisateurs sans le préfixe api.user
     #[Route('/admin/users', name: 'admin.user.list', methods: ['GET'])]
     public function adminIndex(): JsonResponse
     {
