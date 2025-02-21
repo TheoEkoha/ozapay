@@ -57,7 +57,7 @@ class UserController extends AbstractController
     #[Route('/{id}/edit', name: 'edit', methods: ['PUT'])]
     public function update(Request $request, User $user): JsonResponse
     {
-        $data = json_decode($request->getContent(), true); // Décodage du corps de la requête
+        $data = json_decode($request->getContent(), true);
 
         if (isset($data['email'])) {
             $user->setEmail($data['email']);
