@@ -31,8 +31,8 @@ class CustomSearchUserFilter extends AbstractFilter
 
         $queryBuilder
             ->andWhere(sprintf(
-                'LOWER(%s.firstName) LIKE :%s OR 
-                        LOWER(%s.lastName) LIKE :%s OR 
+                'LOWER(%s.first_name) LIKE :%s OR 
+                        LOWER(%s.last_name) LIKE :%s OR 
                         LOWER(%s.email) LIKE :%s OR 
                         LOWER(%s.phone) LIKE :%s',
                 $alias,

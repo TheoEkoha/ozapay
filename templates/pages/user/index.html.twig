@@ -139,8 +139,8 @@
                     url: '/api/users?status[exact]=PUBLISHED&_step[exact]=pin',
                     then: data => data['hydra:member'].map(item => [
                         item.id,
-                        item.firstName ?? '-',
-                        item.lastName ?? '-',
+                        item.first_name ?? '-',
+                        item.last_name ?? '-',
                         item.roles.join(', '),
                         item.email ?? '-',
                         item.phone ?? '-',
