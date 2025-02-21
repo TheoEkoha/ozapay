@@ -72,8 +72,7 @@ class UserController extends AbstractController
         return new JsonResponse(['message' => 'User updated successfully'], JsonResponse::HTTP_OK);
     }
 
-    // Nouvelle route pour la liste des utilisateurs sur /admin/users
-    #[Route('/admin/users', name: 'admin.list', methods: ['GET'])]
+    #[Route('/admin/users', name: 'admin.user.list', methods: ['GET'])]
     public function adminIndex(): JsonResponse
     {
         return $this->index(); // Réutilise la méthode index pour éviter la duplication
