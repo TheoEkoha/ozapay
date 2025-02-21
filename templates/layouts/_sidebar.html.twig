@@ -41,8 +41,8 @@
                 </li>
 
                 <li class="menu-title" data-key="t-applications">{{ 'User accounts'|trans }}</li>
-                <li class="{{ is_active(['admin.user.list']) }}">
-                    <a href="{{ path('admin.user.list') }}">
+                <li class="{{ is_active(['api.user.admin.user.list']) }}">
+                    <a href="{{ path('api.user.admin.user.list') }}">
                         <i class="bx bx-male icon nav-icon"></i>
                         <span class="menu-item">{{ 'User accounts'|trans }}</span>
                     </a>
