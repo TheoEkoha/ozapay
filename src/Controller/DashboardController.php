@@ -6,13 +6,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Symfony\Component\Security\Http\Security; // Updated namespace
 use Psr\Log\LoggerInterface;
 
 
 class DashboardController extends AbstractController
 {
-    public function __construct(private readonly TranslatorInterface $translator, private LoggerInterface $logger, private readonly Security $security)
+    public function __construct(private readonly TranslatorInterface $translator, private LoggerInterface $logger)
     {
     }
 
