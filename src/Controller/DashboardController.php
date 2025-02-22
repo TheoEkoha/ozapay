@@ -19,6 +19,9 @@ class DashboardController extends AbstractController
     {
         $user = $this->getUser(); // Récupérer l'utilisateur connecté
 
+        $session = $this->get('session');
+        $this->logger->info('Détails de la session : ' . json_encode($session->all()));
+
        // Log l'utilisateur récupéré
        if ($user) {
         $this->logger->info('Utilisateur connecté : ' . $user->getUsername());
