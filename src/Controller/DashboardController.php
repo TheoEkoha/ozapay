@@ -18,6 +18,7 @@ class DashboardController extends AbstractController
     {
         $user = $this->getUser(); // Récupérer l'utilisateur connecté
 
+        dump($user); // Vérifier si l'utilisateur est récupéré
 
         return $this->render('pages/dashboard/dashboard-sales.html.twig', [
             'page_title' => $this->translator->trans('Dashboard'),
