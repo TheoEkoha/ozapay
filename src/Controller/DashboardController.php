@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
-use App\Service\UserService;
+use App\Service\Api\User\UserService;
 
 class DashboardController extends AbstractController
 {
