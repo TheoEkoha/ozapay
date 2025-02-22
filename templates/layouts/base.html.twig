@@ -35,7 +35,8 @@
     <!-- Begin page -->
     <div id="layout-wrapper">
 
-
+     {#  {% include 'layouts/_sidebar.html.twig' %} #}
+      {# {% include 'layouts/_horizontal.html.twig' %} #}
 
         <!-- ============================================================== -->
         <!-- Start right Content here -->
@@ -45,7 +46,7 @@
             <div class="page-content">
                 <div class="container-fluid">
 
-                    {% include 'layouts/_topbar.html.twig' %}
+                    {# {% include 'layouts/_topbar.html.twig' %} #}
 
                     {% block content %}
                     {% endblock %}
