@@ -7,22 +7,21 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Security\Core\Security;
 
 class DashboardController extends AbstractController
 {
-    public function __construct(private readonly TranslatorInterface $translator, private LoggerInterface $logger)
+    public function __construct(private readonly TranslatorInterface $translator, private LoggerInterface $logger, private readonly Security $security)
+    {
     {
     }
 
     #[Route('/admin', name: 'dashboard')]
     public function index(): Response
     {
-        $user = $this->getUser(); // Récupérer l'utilisateur connecté
+        $user = $this->security->getUser(); // Récupère l'utilisateur connecté
 
-        $session = $this->get('session');
-        $this->logger->info('Détails de la session : ' . json_encode($session->all()));
-
-       // Log l'utilisateur récupéré
+        
        if ($user) {
         $this->logger->info('Utilisateur connecté : ' . $user->getUsername());
     } else {
