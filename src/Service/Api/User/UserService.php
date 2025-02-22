@@ -248,11 +248,11 @@ public function edit(User $user, Request $request): User
 
 private function handlePhoneUpdate(User $user, string $phone, ?string $signature): void
 {
-    if (preg_match('/^06/', $phone)) {
-        $phone = preg_replace('/^06/', '+33 6', $phone);
-    } elseif (!preg_match('/^\+33 6/', $phone)) {
-        throw new Exception("Invalid phone number format. Please use a valid French number starting with '06'.", Response::HTTP_BAD_REQUEST);
-    }
+    // if (preg_match('/^06/', $phone)) {
+    //     $phone = preg_replace('/^06/', '+33 6', $phone);
+    // } elseif (!preg_match('/^\+33 6/', $phone)) {
+    //     throw new Exception("Invalid phone number format. Please use a valid French number starting with '06'.", Response::HTTP_BAD_REQUEST);
+    // }
 
     if ($user->getPhone() !== $phone) {
         $user->setPhone($phone);
