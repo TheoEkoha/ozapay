@@ -16,16 +16,18 @@ class DashboardController extends AbstractController
     #[Route('/admin', name: 'dashboard')]
     public function index(): Response
     {
-        $user = $event->getUser();
+        $user = $this->getUser(); // Récupérer l'utilisateur connecté
+
+
         return $this->render('pages/dashboard/dashboard-sales.html.twig', [
             'page_title' => $this->translator->trans('Dashboard'),
             'breadcrumbs' => [
                 [
                     'title' => 'Dashboard',
                     'url' => 'dashboard',
-                    'user' => $user
                 ]
             ]
+            'user' => $user
         ]);
     }
 }
