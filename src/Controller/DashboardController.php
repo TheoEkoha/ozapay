@@ -12,7 +12,7 @@ use Psr\Log\LoggerInterface;
 
 class DashboardController extends AbstractController
 {
-    public function __construct(private readonly TranslatorInterface $translator, private LoggerInterface $logger)
+    public function __construct(private readonly TranslatorInterface $translator, private LoggerInterface $logger, private readonly Security $security)
     {
     }
 
