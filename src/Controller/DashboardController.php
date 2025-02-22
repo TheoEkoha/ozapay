@@ -19,13 +19,13 @@ class DashboardController extends AbstractController
     #[Route('/admin', name: 'dashboard')]
     public function index(): Response
     {
-        $user = $this->security->getUser(); // Récupère l'utilisateur connecté
+        // $user = $this->security->getUser(); // Récupère l'utilisateur connecté
 
-        if ($user) {
-            $this->logger->info('Utilisateur connecté : ' . $user->getUsername());
-        } else {
-            $this->logger->warning('Aucun utilisateur connecté.');
-        }
+        // if ($user) {
+        //     $this->logger->info('Utilisateur connecté : ' . $user->getUsername());
+        // } else {
+        //     $this->logger->warning('Aucun utilisateur connecté.');
+        // }
 
         return $this->render('pages/dashboard/dashboard-sales.html.twig', [
             'page_title' => $this->translator->trans('Dashboard'),
@@ -34,8 +34,7 @@ class DashboardController extends AbstractController
                     'title' => 'Dashboard',
                     'url' => 'dashboard',
                 ]
-            ],
-            'user' => $user,
+            ]
         ]);
     }
 }
