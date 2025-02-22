@@ -36,7 +36,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 readonly class UserService extends UserCommonService
 {
-    private readonly Security $security; // Ajoutez le type ici
     private LoggerInterface $logger;
 
     public function __construct(
@@ -50,11 +49,11 @@ readonly class UserService extends UserCommonService
         SmsService                            $sms,
         private AuthenticationService         $authService,
         private Tools                         $tools,
+        private Security                      $security,
         private DataEncryption                $dataEncryption
     ) {
         parent::__construct($serializer, $sms, $em, $mailerService);
         $this->logger = $logger;
-        $this->security = $security;
     }
 
     /**
