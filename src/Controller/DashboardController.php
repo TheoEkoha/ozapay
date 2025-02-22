@@ -26,8 +26,8 @@ class DashboardController extends AbstractController
                     'title' => 'Dashboard',
                     'url' => 'dashboard',
                 ]
-            ]
-            'user' => $user
+            ],
+            'user' => $user,
         ]);
     }
 }
