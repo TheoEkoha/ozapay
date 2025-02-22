@@ -16,12 +16,14 @@ class DashboardController extends AbstractController
     #[Route('/admin', name: 'dashboard')]
     public function index(): Response
     {
+        $user = $event->getUser();
         return $this->render('pages/dashboard/dashboard-sales.html.twig', [
             'page_title' => $this->translator->trans('Dashboard'),
             'breadcrumbs' => [
                 [
                     'title' => 'Dashboard',
-                    'url' => 'dashboard'
+                    'url' => 'dashboard',
+                    'user' => $user
                 ]
             ]
         ]);
