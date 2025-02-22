@@ -7,29 +7,21 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\SecurityBundle\Security;
-use App\Entity\User\User; // Assurez-vous que le bon namespace est utilisé pour votre entité User
+use Symfony\Component\Security\Core\Security;
 
 class DashboardController extends AbstractController
 {
-    public function __construct(
-        private readonly TranslatorInterface $translator,
-        private LoggerInterface $logger,
-        private Security $security
-    ) {
+    public function __construct(private readonly TranslatorInterface $translator, private LoggerInterface $logger, private Security $security)
+    {
     }
 
     #[Route('/admin', name: 'dashboard')]
     public function index(): Response
     {
-        $user = $this->security->getUser(); // Récupère l'utilisateur connecté
+        $user = $this->security->getUser();
 
-        if ($user instanceof User) {
+        if ($user) {
             $this->logger->info('Utilisateur connecté : ' . $user->getUsername());
-            // Mettez à jour la locale de l'application ici si nécessaire
-            // Utilisez la locale de l'utilisateur pour ajuster le contenu affiché
-            // Vous pourriez vouloir changer la locale ici si nécessaire
-            // $this->get('translator')->setLocale($user->getLocal());
         } else {
             $this->logger->warning('Aucun utilisateur connecté.');
         }
