@@ -12,8 +12,11 @@ use App\Service\UserService;
 
 class DashboardController extends AbstractController
 {
-    public function __construct(private readonly TranslatorInterface $translator, private LoggerInterface $logger, private Security $security)
+    private readonly UserService $userService;
+
+    public function __construct(UserService $userService, private readonly TranslatorInterface $translator, private LoggerInterface $logger, private Security $security)
     {
+        $this->userService = $userService;
     }
 
     #[Route('/admin', name: 'dashboard')]
