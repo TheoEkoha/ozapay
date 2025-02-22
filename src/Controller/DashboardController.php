@@ -8,6 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use App\Service\UserService;
 
 class DashboardController extends AbstractController
 {
@@ -18,7 +19,7 @@ class DashboardController extends AbstractController
     #[Route('/admin', name: 'dashboard')]
     public function index(): Response
     {
-        $user = $this->security->getUser();
+        $user = $this->userService->getCurrentUser();
 
         if ($user) {
             $this->logger->info('Utilisateur connecté : ' . $user->getUsername());
