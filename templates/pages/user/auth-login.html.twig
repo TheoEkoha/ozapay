@@ -28,7 +28,7 @@
                                     <form novalidate method="post" action="{{ path('app_login') }}">
                                         {% if app.user %}
                                             <div class="mb-3">
-                                                {{ 'You are logged in as'|trans }} {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">{{ 'Logout'|trans }}</a>
+                                                {{ 'You are logged in as'|trans }} {{ user.userIdentifier }}, <a href="{{ path('app_logout') }}">{{ 'Logout'|trans }}</a>
                                             </div>
                                         {% endif %}
                                         <div class="mb-3 ">
