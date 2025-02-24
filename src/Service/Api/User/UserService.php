@@ -221,8 +221,16 @@ public function edit(User $user, Request $request): User
         ];
     
         foreach ($fieldsToUpdate as $field => $method) {
-            if (isset($dataArray[$field]) && $dataArray[$field] !== $user->{'get' . ucfirst($field)}()) {
-                $user->{$method}($dataArray[$field]);
+            if ($field === 'role') {
+                // Cas spécifique pour 'role'
+                if (isset($dataArray[$field]) && $dataArray[$field] !== $user->getRoles()) {
+                    $user->{$method}($dataArray[$field]);
+                }
+            } else {
+                // Cas général pour les autres champs
+                if (isset($dataArray[$field]) && $dataArray[$field] !== $user->{'get' . ucfirst($field)}()) {
+                    $user->{$method}($dataArray[$field]);
+                }
             }
         }
 
