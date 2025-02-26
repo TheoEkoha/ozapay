@@ -317,7 +317,7 @@ private function setUserStep(User $user, string $step): void
 {
     try {
         $stepValue = Step::from($step);
-        // $user->setStep($stepValue);
+        $user->setStep($stepValue);
     } catch (\ValueError $e) {
         throw new Exception(ErrorsConstant::STEP_INVALID, Response::HTTP_BAD_REQUEST);
     }
