@@ -282,9 +282,9 @@ private function handleEmailUpdate(User $user, string $newEmail): void
         $user->setEmail($newEmail);
 
         // Envoyer le code de validation par email seulement si l'utilisateur est nouveau
-        if ($user->getId() === null) {
-            $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
-        }
+        //if ($user->getId() === null) {
+        $this->sendMailCode($user, $newEmail, VerificationConstant::SIGN_UP_VER);
+        //}
     }
 }
 
