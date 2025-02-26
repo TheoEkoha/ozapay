@@ -312,10 +312,10 @@ use Symfony\Component\Validator\Constraints as Assert;
     ]
 )]
 #[ORM\Table(name: '`user`')]
-//#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email', 'phone'])]
-//#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['phone'])]
-//#[UniqueEntity(fields: ['email', 'phone'])]
-//#[UniqueEntity(fields: ['phone'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE', fields: ['phone'])]
+#[UniqueEntity(fields: ['email'])]
+#[UniqueEntity(fields: ['phone'])]
 #[ORM\HasLifecycleCallbacks]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -330,7 +330,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     //#[ORM\Column(length: 180, unique: true, nullable: true)]
-    #[ORM\Column(length: 180, nullable: true)]
+    #[ORM\Column(length: 180, unique: true, nullable: true)]
     #[Groups(['user:read'])]
     #[Assert\Email]
     private ?string $email = null;
@@ -379,7 +379,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $address = null;
 
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255,unique: true,nullable: true)]
     #[Groups(['user:read'])]
     private ?string $phone = null;
 
