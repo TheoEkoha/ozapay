@@ -215,7 +215,7 @@ public function edit(User $user, Request $request): User
             'address' => 'setAddress',
             'postalCode' => 'setPostalCode',
             'city' => 'setCity',
-            'role' => 'setRole',
+            'role' => 'setRoles',
             'conditionAccepted' => 'setConditionAccepted',
             'marketingAccepted' => 'setMarketingAccepted',
         ];
