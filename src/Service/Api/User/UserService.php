@@ -386,6 +386,34 @@ private function setUserStep(User $user, string $step): void
         $this->em->persist($user);
     }
 
+    public function deleteUserByEmail(string $email): void
+    {
+        // Rechercher l'utilisateur par son e-mail
+        $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
+
+        if ($user) {
+            // Supprimer l'utilisateur
+            $this->em->remove($user);
+            $this->em->flush(); // Valider les changements
+        } else {
+            throw new \Exception("Utilisateur non trouvé avec l'e-mail : $email");
+        }
+    }
+
+    public function deleteUserByPhoneNumber(string $phone): void
+    {
+        // Rechercher l'utilisateur par numéro de téléphone
+        $user = $this->em->getRepository(User::class)->findOneBy(['phone' => $phone]);
+
+        if (!$user) {
+            throw new \Exception('Utilisateur non trouvé avec le numéro de téléphone : ' . $phone);
+        }
+
+        // Supprimer l'utilisateur
+        $this->em->remove($user);
+        $this->em->flush(); // Appliquer les changements à la base de données
+    }
+
 
     /**
      * @throws JsonException
