@@ -3,6 +3,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\User\User;
 use App\Repository\User\UserRepository;
+use App\Service\Api\User\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,6 +15,7 @@ class UserController extends AbstractController
 {
     public function __construct(
         private readonly UserRepository $repository,
+        private readonly UserService $service,
         private EntityManagerInterface $em,
     ) {}
 
@@ -89,8 +91,15 @@ class UserController extends AbstractController
             return new JsonResponse(['error' => 'Le numéro de téléphone est requis.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
+        $this->logger->info('API Call', [
+            'path' => $request->getPathInfo(),
+            'method' => $request->getMethod(),
+            'headers' => $request->headers->all(),
+            'body' => json_decode($request->getContent(), true),
+        ], ['channel' => 'api']);
+
         try {
-            $this->deleteUserByPhoneNumber($phone); // Appeler la méthode pour supprimer l'utilisateur
+            $this->service->deleteUserByPhoneNumber($phone); // Appeler la méthode pour supprimer l'utilisateur
             return new JsonResponse(['message' => 'Utilisateur supprimé avec succès.'], JsonResponse::HTTP_OK);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_NOT_FOUND);
