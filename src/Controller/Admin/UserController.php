@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Psr\Log\LoggerInterface;
 
 #[Route('/api/users', name: 'api.user.')]
 class UserController extends AbstractController
@@ -17,6 +18,7 @@ class UserController extends AbstractController
         private readonly UserRepository $repository,
         private readonly UserService $service,
         private EntityManagerInterface $em,
+        private LoggerInterface $logger // Injection du logger
     ) {}
 
     #[Route('/', name: 'list', methods: ['GET'])]
