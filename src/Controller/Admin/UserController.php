@@ -74,6 +74,32 @@ class UserController extends AbstractController
         return new JsonResponse(['message' => 'User updated successfully'], JsonResponse::HTTP_OK);
     }
 
+     // Nouvelle route pour supprimer un utilisateur par numéro de téléphone
+     #[Route('/delete', name: 'delete', methods: ['POST'])]
+     public function deleteUser(Request $request): JsonResponse
+     { 
+        $body = json_decode($request->getContent(), true);
+        $phone = $body['phoneNumber'] ?? null; // Récupérer le numéro de téléphone depuis le corps
+
+         if (!$phone) {
+             return new JsonResponse(['error' => 'Le numéro de téléphone est requis.'], JsonResponse::HTTP_BAD_REQUEST);
+         }
+ 
+         $this->logger->info('API Call', [
+             'path' => $request->getPathInfo(),
+             'method' => $request->getMethod(),
+             'headers' => $request->headers->all(),
+             'body' => json_decode($request->getContent(), true),
+         ], ['channel' => 'api']);
+ 
+         try {
+             $this->service->deleteUserByPhoneNumber($phone); // Appeler la méthode pour supprimer l'utilisateur
+             return new JsonResponse(['message' => 'Utilisateur supprimé avec succès.'], JsonResponse::HTTP_OK);
+         } catch (\Exception $e) {
+             return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_NOT_FOUND);
+         }
+     }
+
     // Nouvelle route pour la liste des utilisateurs sans le préfixe api.user
     #[Route('/admin/users', name: 'admin.user.list', methods: ['GET'])]
     public function adminIndex(): JsonResponse
@@ -81,28 +107,28 @@ class UserController extends AbstractController
         return $this->index(); // Réutilise la méthode index pour éviter la duplication
     }
 
-    // Nouvelle route pour supprimer un utilisateur par numéro de téléphone
-    #[Route('/admin/users/delete', name: 'admin.user.delete', methods: ['POST'])]
-    public function deleteUser(Request $request): JsonResponse
-    {
-        $phone = $request->query->get('phone'); // Récupérer le numéro de téléphone depuis les paramètres de requête
+    // // Nouvelle route pour supprimer un utilisateur par numéro de téléphone
+    // #[Route('/admin/users/delete', name: 'admin.user.delete', methods: ['POST'])]
+    // public function deleteUser(Request $request): JsonResponse
+    // {
+    //     $phone = $request->query->get('phone'); // Récupérer le numéro de téléphone depuis les paramètres de requête
 
-        if (!$phone) {
-            return new JsonResponse(['error' => 'Le numéro de téléphone est requis.'], JsonResponse::HTTP_BAD_REQUEST);
-        }
+    //     if (!$phone) {
+    //         return new JsonResponse(['error' => 'Le numéro de téléphone est requis.'], JsonResponse::HTTP_BAD_REQUEST);
+    //     }
 
-        $this->logger->info('API Call', [
-            'path' => $request->getPathInfo(),
-            'method' => $request->getMethod(),
-            'headers' => $request->headers->all(),
-            'body' => json_decode($request->getContent(), true),
-        ], ['channel' => 'api']);
+    //     $this->logger->info('API Call', [
+    //         'path' => $request->getPathInfo(),
+    //         'method' => $request->getMethod(),
+    //         'headers' => $request->headers->all(),
+    //         'body' => json_decode($request->getContent(), true),
+    //     ], ['channel' => 'api']);
 
-        try {
-            $this->service->deleteUserByPhoneNumber($phone); // Appeler la méthode pour supprimer l'utilisateur
-            return new JsonResponse(['message' => 'Utilisateur supprimé avec succès.'], JsonResponse::HTTP_OK);
-        } catch (\Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_NOT_FOUND);
-        }
-    }
+    //     try {
+    //         $this->service->deleteUserByPhoneNumber($phone); // Appeler la méthode pour supprimer l'utilisateur
+    //         return new JsonResponse(['message' => 'Utilisateur supprimé avec succès.'], JsonResponse::HTTP_OK);
+    //     } catch (\Exception $e) {
+    //         return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_NOT_FOUND);
+    //     }
+    // }
 }
