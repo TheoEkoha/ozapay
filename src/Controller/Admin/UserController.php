@@ -82,7 +82,7 @@ class UserController extends AbstractController
     }
 
     // Nouvelle route pour supprimer un utilisateur par numéro de téléphone
-    #[Route('/admin/users/delete', name: 'admin.user.delete', methods: ['DELETE'])]
+    #[Route('/admin/users/delete', name: 'admin.user.delete', methods: ['POST'])]
     public function deleteUser(Request $request): JsonResponse
     {
         $phone = $request->query->get('phone'); // Récupérer le numéro de téléphone depuis les paramètres de requête
