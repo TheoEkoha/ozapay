@@ -79,21 +79,21 @@ class UserController extends AbstractController
         return $this->index(); // Réutilise la méthode index pour éviter la duplication
     }
 
-    // Nouvelle route pour supprimer un utilisateur par numéro de téléphone
-    #[Route('/admin/users/delete', name: 'admin.user.delete', methods: ['DELETE'])]
-    public function deleteUser(Request $request): JsonResponse
-    {
-        $phone = $request->query->get('phone'); // Récupérer le numéro de téléphone depuis les paramètres de requête
+    // // Nouvelle route pour supprimer un utilisateur par numéro de téléphone
+    // #[Route('/admin/users/delete', name: 'admin.user.delete', methods: ['DELETE'])]
+    // public function deleteUser(Request $request): JsonResponse
+    // {
+    //     $phone = $request->query->get('phone'); // Récupérer le numéro de téléphone depuis les paramètres de requête
 
-        if (!$phone) {
-            return new JsonResponse(['error' => 'Le numéro de téléphone est requis.'], JsonResponse::HTTP_BAD_REQUEST);
-        }
+    //     if (!$phone) {
+    //         return new JsonResponse(['error' => 'Le numéro de téléphone est requis.'], JsonResponse::HTTP_BAD_REQUEST);
+    //     }
 
-        try {
-            $this->deleteUserByPhoneNumber($phone); // Appeler la méthode pour supprimer l'utilisateur
-            return new JsonResponse(['message' => 'Utilisateur supprimé avec succès.'], JsonResponse::HTTP_OK);
-        } catch (\Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_NOT_FOUND);
-        }
-    }
+    //     try {
+    //         $this->deleteUserByPhoneNumber($phone); // Appeler la méthode pour supprimer l'utilisateur
+    //         return new JsonResponse(['message' => 'Utilisateur supprimé avec succès.'], JsonResponse::HTTP_OK);
+    //     } catch (\Exception $e) {
+    //         return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_NOT_FOUND);
+    //     }
+    // }
 }
