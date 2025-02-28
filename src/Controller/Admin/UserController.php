@@ -53,6 +53,12 @@ class UserController extends AbstractController
     #[Route('/profile/{id}', name: 'profileuser', methods: ['GET'])]
     public function profileUser(int $id): JsonResponse
     {
+            // Log de l'ID reçu
+    $this->logger->info('Profil utilisateur demandé', [
+        'id' => $id
+    ]);
+
+    
         $user = $this->service->getUserById($id);
 
         $this->logger->info('API Call PROFIL USER', [
