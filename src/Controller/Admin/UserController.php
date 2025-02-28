@@ -55,6 +55,10 @@ class UserController extends AbstractController
     {
         $user = $this->userService->getUserById($id);
 
+        $this->logger->info('API Call PROFIL USER', [
+            'USER' => $user
+        ], ['channel' => 'api']);
+
         $data = $this->json([
             'id' => $user->getId(),
             'name' => $user->getName(),
