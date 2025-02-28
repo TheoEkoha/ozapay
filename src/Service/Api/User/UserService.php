@@ -478,8 +478,8 @@ private function setUserStep(User $user, string $step): void
 
     public function getUserById(int $id): User
     {
-        $user = $this->repository->find($id);
-
+        $user = $this->em->getRepository(User::class)->findOneBy(['id' => $id]);
+        
         if (!$user) {
             throw new NotFoundHttpException('Utilisateur non trouvé.');
         }
