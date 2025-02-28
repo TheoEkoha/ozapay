@@ -49,6 +49,21 @@ class UserController extends AbstractController
         return $this->json($data);
     }
 
+
+    #[Route('/profile/{id}', name: 'profileuser', methods: ['GET'])]
+    public function profileUser(int $id): JsonResponse
+    {
+        $user = $this->userService->getUserById($id);
+
+        $data = $this->json([
+            'id' => $user->getId(),
+            'name' => $user->getName(),
+            'email' => $user->getEmail(),
+        ]);
+        return $this->json($data);
+    }
+
+
     #[Route('/{id}/delete', name: 'delete', methods: ['DELETE'])]
     public function delete(User $user): JsonResponse
     {

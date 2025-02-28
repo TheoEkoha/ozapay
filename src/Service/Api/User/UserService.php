@@ -474,4 +474,15 @@ private function setUserStep(User $user, string $step): void
     {
         return $this->security->getUser();
     }
+
+    public function getUserById(int $id): User
+    {
+        $user = $this->repository->find($id);
+
+        if (!$user) {
+            throw new NotFoundHttpException('Utilisateur non trouvé.');
+        }
+
+        return $user;
+    }
 }
