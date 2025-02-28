@@ -205,6 +205,7 @@ public function edit(User $user, Request $request): User
         // Gérer le code PIN
         if (isset($data['pin']) && $data['_step'] === 'pin') {
             $this->handlePinUpdate($user, $data['pin']);
+            $user->setCode(strtoupper($this->tools->generateRandomString(6)));
         }
 
         $dataArray = $request->toArray(); // Récupère les données de la requête
