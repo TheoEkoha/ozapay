@@ -44,6 +44,7 @@ class UserController extends AbstractController
             'email' => $user->getEmail(),
             'status' => $user->getStatus()->value,
             'created_at' => $user->getCreated()?->format('Y-m-d H:i:s'),
+            'created_at' => $user->getCreated()?->format('Y-m-d H:i:s'),
         ];
 
         return $this->json($data);
@@ -101,15 +102,14 @@ class UserController extends AbstractController
         return new JsonResponse(['message' => 'User updated successfully'], JsonResponse::HTTP_OK);
     }
 
-     // Nouvelle route pour supprimer un utilisateur par numéro de téléphone
      #[Route('/delete', name: 'delete', methods: ['POST'])]
      public function deleteUser(Request $request): JsonResponse
      { 
         $body = json_decode($request->getContent(), true);
-        $phone = $body['phoneNumber'] ?? null; // Récupérer le numéro de téléphone depuis le corps
+        $email = $body['email'] ?? null; 
 
          if (!$phone) {
-             return new JsonResponse(['error' => 'Le numéro de téléphone est requis.'], JsonResponse::HTTP_BAD_REQUEST);
+             return new JsonResponse(['error' => 'L adresse email est requise.'], JsonResponse::HTTP_BAD_REQUEST);
          }
  
          $this->logger->info('API Call', [
@@ -120,7 +120,7 @@ class UserController extends AbstractController
          ], ['channel' => 'api']);
  
          try {
-             $this->service->deleteUserByPhoneNumber($phone); // Appeler la méthode pour supprimer l'utilisateur
+             $this->service->deleteUserByEmail($email); // Appeler la méthode pour supprimer l'utilisateur
              return new JsonResponse(['message' => 'Utilisateur supprimé avec succès.'], JsonResponse::HTTP_OK);
          } catch (\Exception $e) {
              return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_NOT_FOUND);
