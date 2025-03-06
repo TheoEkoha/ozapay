@@ -7,7 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
-use App\Entity\User;
+use App\Entity\User\User;
 use DateTime;
 
 #[AsCommand(
@@ -30,7 +30,7 @@ class CleanupUsersCommand extends Command
         $expiryDate->sub(new \DateInterval('PT30M')); // Soustrait 30 minutes à l'heure actuelle
 
         $query = $this->entityManager->createQuery(
-            'SELECT u FROM App\Entity\User u WHERE u.email LIKE :email AND u.created < :expiryDate'
+            'SELECT u FROM App\Entity\User\User u WHERE u.email LIKE :email AND u.created < :expiryDate'
         )->setParameter('email', '%@ozapay@mailinator.com')
          ->setParameter('expiryDate', $expiryDate);
 
