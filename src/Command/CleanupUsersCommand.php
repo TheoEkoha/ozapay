@@ -30,7 +30,7 @@ class CleanupUsersCommand extends Command
         $expiryDate->sub(new \DateInterval('PT30M')); // Soustrait 30 minutes à l'heure actuelle
 
         $query = $this->entityManager->createQuery(
-            'SELECT u FROM App\Entity\User u WHERE u.email LIKE :email AND u.createdAt < :expiryDate'
+            'SELECT u FROM App\Entity\User u WHERE u.email LIKE :email AND u.created < :expiryDate'
         )->setParameter('email', '%@ozapay@mailinator.com')
          ->setParameter('expiryDate', $expiryDate);
 
