@@ -31,7 +31,7 @@ class CleanupUsersCommand extends Command
 
         $query = $this->entityManager->createQuery(
             'SELECT u FROM App\Entity\User\User u WHERE u.email LIKE :email AND u.created < :expiryDate'
-        )->setParameter('email', '%@ozapay@mailinator.com')
+        )->setParameter('email', '%ozapay@mailinator.com')
          ->setParameter('expiryDate', $expiryDate);
 
         $users = $query->getResult();
