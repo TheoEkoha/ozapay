@@ -108,7 +108,7 @@ class UserController extends AbstractController
         $body = json_decode($request->getContent(), true);
         $email = $body['email'] ?? null; 
 
-         if (!$phone) {
+         if (!$email) {
              return new JsonResponse(['error' => 'L adresse email est requise.'], JsonResponse::HTTP_BAD_REQUEST);
          }
  
