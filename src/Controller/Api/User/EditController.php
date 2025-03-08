@@ -3,7 +3,8 @@
 namespace App\Controller\Api\User;
 
 use App\Entity\User\User;
-use App\Security\AuthenticationService;
+use App\Service\Api\User\UserService;
+use App\Security\AuthenticationService; // Importez le bon namespace
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
