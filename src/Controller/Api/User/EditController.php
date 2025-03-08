@@ -4,7 +4,8 @@ namespace App\Controller\Api\User;
 
 use App\Entity\User\User;
 use App\Service\Api\User\UserService;
-use App\Security\AuthenticationService; // Importez le bon namespace
+use App\Security\AuthenticationService;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
