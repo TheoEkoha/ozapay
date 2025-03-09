@@ -37,6 +37,7 @@ class EditController extends AbstractController
         return new JsonResponse([
             'message' => 'User updated successfully',
             'tempToken' => $tempToken,
+            'token' => $tempToken,
         ]);
     }
 
