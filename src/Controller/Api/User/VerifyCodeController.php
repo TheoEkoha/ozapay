@@ -9,6 +9,7 @@ use App\Service\Api\User\UserService;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTEncodeFailureException;
 use Random\RandomException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Security\AuthenticationService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,6 +20,7 @@ class VerifyCodeController extends AbstractController
     public function __construct(
         protected UserService         $service,
         protected SerializerInterface $serializer,
+        protected AuthenticationService $authService
     ) {
     }
 
