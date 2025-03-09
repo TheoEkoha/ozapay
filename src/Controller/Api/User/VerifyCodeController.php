@@ -51,6 +51,7 @@ class VerifyCodeController extends AbstractController
                 'data' => $dataSerialized,
                 'tempToken' => $tempToken,
                 'message' => VerificationConstant::VERIFICATION_SUCCESS,
+                'hasPin' => false
             ];
 
             if ($data['type'] != "MAIL") {
