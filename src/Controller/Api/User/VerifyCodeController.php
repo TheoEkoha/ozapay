@@ -53,6 +53,17 @@ class VerifyCodeController extends AbstractController
                 'message' => VerificationConstant::VERIFICATION_SUCCESS,
             ];
 
+            if ($data['type'] != "MAIL") {
+// Ajoute le tempToken à la réponse
+                $responseData = [
+                    'data' => $dataSerialized,
+                    'tempToken' => $tempToken,
+                    'message' => VerificationConstant::VERIFICATION_SUCCESS,
+                    'hasPin' => true
+                ];
+            }
+            
+
             return $this->json($responseData, Response::HTTP_OK, ['Content-Type' => 'application/ld+json']);
         }
 
