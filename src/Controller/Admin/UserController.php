@@ -127,6 +127,33 @@ class UserController extends AbstractController
          }
      }
 
+    #[Route('/delete-multiple', name: 'delete_multiple', methods: ['POST'])]
+    public function deleteMultipleUsers(Request $request): JsonResponse
+    {
+        $body = json_decode($request->getContent(), true);
+        $emails = $body['emails'] ?? null;
+
+        if (!$emails || !is_array($emails) || empty($emails)) {
+            return new JsonResponse(['error' => 'Une liste d\'adresses email est requise.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $this->logger->info('API Call', [
+            'path'    => $request->getPathInfo(),
+            'method'  => $request->getMethod(),
+            'headers' => $request->headers->all(),
+            'body'    => $body,
+        ], ['channel' => 'api']);
+
+        try {
+            foreach ($emails as $email) {
+                $this->service->deleteUserByEmail($email);
+            }
+            return new JsonResponse(['message' => 'Utilisateurs supprimés avec succès.'], JsonResponse::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_NOT_FOUND);
+        }
+    }
+
     // Nouvelle route pour la liste des utilisateurs sans le préfixe api.user
     #[Route('/admin/users', name: 'admin.user.list', methods: ['GET'])]
     public function adminIndex(): JsonResponse
