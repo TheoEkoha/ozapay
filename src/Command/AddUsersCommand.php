@@ -88,99 +88,103 @@ class AddUsersCommand extends Command
     }
 
     private function processFile(string $filePath, SymfonyStyle $io): void
-    {
-        if (($handle = fopen($filePath, "r")) === false) {
-            throw new \RuntimeException("Could not open file: $filePath");
-        }
+{
+    if (($handle = fopen($filePath, "r")) === false) {
+        throw new \RuntimeException("Could not open file: $filePath");
+    }
 
-        // Count total rows (excluding header)
-        $totalRows = -1;
-        while (!feof($handle)) {
-            if (fgetcsv($handle) !== false) {
-                $totalRows++;
-            }
-        }
-        rewind($handle);
-
-        $headers = array_map('strtolower', fgetcsv($handle));
-        $importCount = 0;
-        $skippedCount = 0;
-        $i = 0;
-        $userArray = [];
-
-        $progressBar = $io->createProgressBar($totalRows);
-        $progressBar->start();
-
-        $this->em->getConnection()->beginTransaction();
-        try {
-            while (($data = fgetcsv($handle)) !== false) {
-                $headerString = $headers[0];
-                $dataString = $data[0];
-
-                $headerArray = explode(';', $headerString);
-                $dataArray = explode(';', $dataString);
-
-                if (count($headerArray) !== count($dataArray)) {
-                    throw new \RuntimeException("Le nombre de colonnes ne correspond pas dans le fichier CSV à la ligne : " . json_encode($dataArray));
-                }
-                
-                $rowData = array_combine($headerArray, $dataArray);
-                // Check if email already exists in database
-                $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowData['email']]);
-                $existingUserByPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $rowData['telephone']]);
-                if ($existingUser || $existingUserByPhone) {
-                    $skippedCount++;
-                    $progressBar->advance();
-                    continue;
-                }
-
-                // Check for duplicates in current import
-                $isDuplicate = false;
-                foreach ($userArray as $existingUser) {
-                    if ($existingUser['email'] === $rowData['email'] ||
-                        $existingUser['telephone'] === $rowData['telephone']) {
-                        $isDuplicate = true;
-                        $skippedCount++;
-                        break;
-                    }
-                }
-
-                if (!$isDuplicate) {
-                    $userArray[] = $rowData;
-                    $user = $this->createUser($rowData);
-                    $this->em->persist($user);
-                    $importCount++;
-                    $i++;
-
-                    if (($i % self::BATCH_SIZE) === 0) {
-                        $this->em->flush();
-                        $this->em->clear();
-                    }
-                }
-
-                $progressBar->advance();
-            }
-
-            // Final flush for remaining records
-            $this->em->flush();
-            $this->em->getConnection()->commit();
-
-            $progressBar->finish();
-            $io->newLine(2);
-
-            fclose($handle);
-
-            $io->success(sprintf(
-                "Imported %d users. Skipped %d duplicate entries.",
-                $importCount,
-                $skippedCount
-            ));
-        } catch (\Exception $e) {
-            $this->em->getConnection()->rollBack();
-            fclose($handle);
-            throw $e;
+    // Count total rows (excluding header)
+    $totalRows = -1;
+    while (!feof($handle)) {
+        if (fgetcsv($handle) !== false) {
+            $totalRows++;
         }
     }
+    rewind($handle);
+
+    $headers = array_map('strtolower', fgetcsv($handle));
+    $importCount = 0;
+    $skippedCount = 0;
+    $i = 0;
+    $userArray = []; // Array to keep track of users already processed in this CSV
+
+    $progressBar = $io->createProgressBar($totalRows);
+    $progressBar->start();
+
+    $this->em->getConnection()->beginTransaction();
+    try {
+        while (($data = fgetcsv($handle)) !== false) {
+            $headerString = $headers[0];
+            $dataString = $data[0];
+
+            $headerArray = explode(';', $headerString);
+            $dataArray = explode(';', $dataString);
+
+            // Ensure column count matches
+            if (count($headerArray) !== count($dataArray)) {
+                throw new \RuntimeException("Le nombre de colonnes ne correspond pas dans le fichier CSV à la ligne : " . json_encode($dataArray));
+            }
+
+            $rowData = array_combine($headerArray, $dataArray);
+
+            // Check if email or phone already exists in database
+            $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowData['email']]);
+            $existingUserByPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $rowData['telephone']]);
+
+            // Skip if the user already exists in the database
+            if ($existingUser || $existingUserByPhone) {
+                $skippedCount++;
+                $progressBar->advance();
+                continue;
+            }
+
+            // Check for duplicates in the current CSV file (email or phone already processed)
+            $isDuplicate = false;
+            foreach ($userArray as $existingUser) {
+                if ($existingUser['email'] === $rowData['email'] ||
+                    $existingUser['telephone'] === $rowData['telephone']) {
+                    $isDuplicate = true;
+                    $skippedCount++;
+                    break;
+                }
+            }
+
+            if (!$isDuplicate) {
+                $userArray[] = $rowData; // Add to processed users array
+                $user = $this->createUser($rowData);
+                $this->em->persist($user);
+                $importCount++;
+                $i++;
+
+                if (($i % self::BATCH_SIZE) === 0) {
+                    $this->em->flush();
+                    $this->em->clear();
+                }
+            }
+
+            $progressBar->advance();
+        }
+
+        // Final flush for remaining records
+        $this->em->flush();
+        $this->em->getConnection()->commit();
+
+        $progressBar->finish();
+        $io->newLine(2);
+
+        fclose($handle);
+
+        $io->success(sprintf(
+            "Imported %d users. Skipped %d duplicate entries.",
+            $importCount,
+            $skippedCount
+        ));
+    } catch (\Exception $e) {
+        $this->em->getConnection()->rollBack();
+        fclose($handle);
+        throw $e;
+    }
+}
 
 
     private function createUser(array $rowData): User
