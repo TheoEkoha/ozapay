@@ -111,7 +111,7 @@ class AddUsersCommand extends Command
         $progressBar = $io->createProgressBar($totalRows);
         $progressBar->start();
 
-        //$this->em->getConnection()->beginTransaction();
+        $this->em->getConnection()->beginTransaction();
         try {
             while (($data = fgetcsv($handle)) !== false) {
                 $headerString = $headers[0];
