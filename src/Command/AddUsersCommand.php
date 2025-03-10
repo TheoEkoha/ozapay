@@ -106,7 +106,7 @@ class AddUsersCommand extends Command
     $importCount = 0;
     $skippedCount = 0;
     $i = 0;
-    $userArray = []; // Array to keep track of users already processed in this CSV
+    $userArray = [];
 
     $progressBar = $io->createProgressBar($totalRows);
     $progressBar->start();
@@ -120,25 +120,29 @@ class AddUsersCommand extends Command
             $headerArray = explode(';', $headerString);
             $dataArray = explode(';', $dataString);
 
-            // Ensure column count matches
             if (count($headerArray) !== count($dataArray)) {
                 throw new \RuntimeException("Le nombre de colonnes ne correspond pas dans le fichier CSV à la ligne : " . json_encode($dataArray));
             }
 
             $rowData = array_combine($headerArray, $dataArray);
 
-            // Check if email or phone already exists in database
+            // Check if 'email' key exists
+            if (!isset($rowData['email'])) {
+                $skippedCount++;
+                $progressBar->advance();
+                continue; // Skip this row if email is missing
+            }
+
+            // Check if email already exists in database
             $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowData['email']]);
             $existingUserByPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $rowData['telephone']]);
-
-            // Skip if the user already exists in the database
             if ($existingUser || $existingUserByPhone) {
                 $skippedCount++;
                 $progressBar->advance();
                 continue;
             }
 
-            // Check for duplicates in the current CSV file (email or phone already processed)
+            // Check for duplicates in current import
             $isDuplicate = false;
             foreach ($userArray as $existingUser) {
                 if ($existingUser['email'] === $rowData['email'] ||
@@ -150,7 +154,7 @@ class AddUsersCommand extends Command
             }
 
             if (!$isDuplicate) {
-                $userArray[] = $rowData; // Add to processed users array
+                $userArray[] = $rowData;
                 $user = $this->createUser($rowData);
                 $this->em->persist($user);
                 $importCount++;
@@ -185,7 +189,6 @@ class AddUsersCommand extends Command
         throw $e;
     }
 }
-
 
     private function createUser(array $rowData): User
     {
