@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Helper\ProgressBar;
 
-class ImportUsersCommand extends Command
+class AddUsersCommand extends Command
 {
     protected static $defaultName = 'app:import-users';
     private const BATCH_SIZE = 20;
