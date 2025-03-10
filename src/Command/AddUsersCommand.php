@@ -113,9 +113,6 @@ class AddUsersCommand extends Command
 
         $this->em->getConnection()->beginTransaction();
         try {
-
-            $existingPhones = []; // Stocker les téléphones déjà ajoutés dans l'import en cours
-
             while (($data = fgetcsv($handle)) !== false) {
                 $headerString = $headers[0];
                 $dataString = $data[0];
@@ -125,31 +122,37 @@ class AddUsersCommand extends Command
 
                 $rowData = array_combine($headerArray, $dataArray);
 
-                // Vérifie si un utilisateur avec cet email existe déjà en base
-                if ($this->em->getRepository(User::class)->findOneBy(['email' => $rowData['email']])) {
+                // Check if email already exists in database
+                $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowData['email']]);
+                $existingUserByPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $rowData['telephone']]);
+                if ($existingUser || $existingUserByPhone) {
                     $skippedCount++;
                     $progressBar->advance();
                     continue;
                 }
 
-                // Vérifie si un téléphone a déjà été utilisé dans l'import en cours
-                if (isset($existingPhones[$rowData['telephone']])) {
-                    $skippedCount++;
-                    $progressBar->advance();
-                    continue;
+                // Check for duplicates in current import
+                $isDuplicate = false;
+                foreach ($userArray as $existingUser) {
+                    if ($existingUser['email'] === $rowData['email'] ||
+                        $existingUser['telephone'] === $rowData['telephone']) {
+                        $isDuplicate = true;
+                        $skippedCount++;
+                        break;
+                    }
                 }
 
-                // Enregistre ce téléphone comme utilisé
-                $existingPhones[$rowData['telephone']] = true;
+                if (!$isDuplicate) {
+                    $userArray[] = $rowData;
+                    $user = $this->createUser($rowData);
+                    $this->em->persist($user);
+                    $importCount++;
+                    $i++;
 
-                $user = $this->createUser($rowData);
-                $this->em->persist($user);
-                $importCount++;
-                $i++;
-
-                if (($i % self::BATCH_SIZE) === 0) {
-                    $this->em->flush();
-                    $this->em->clear();
+                    if (($i % self::BATCH_SIZE) === 0) {
+                        $this->em->flush();
+                        $this->em->clear();
+                    }
                 }
 
                 $progressBar->advance();
