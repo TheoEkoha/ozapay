@@ -70,17 +70,20 @@ class UserController extends AbstractController
     
         $user = $this->service->getUserById($id);
 
-        $this->logger->info('API Call PROFIL USER', [
-            'USER' => $user
-        ], ['channel' => 'api']);
+        $json = $serializer->serialize($user, 'json', ['groups' => 'user:read']);
 
-        $data = $this->json([
-            'id' => $user->getId(),
-            // 'name' => $user->getName(),
-            // 'email' => $user->getEmail(),
-            // 'walletPublicAddress' => $user->getWalletPublicAddress(),
-        ]);
-        return $this->json($data);
+        return new JsonResponse($json, 200, [], true);
+        // $this->logger->info('API Call PROFIL USER', [
+        //     'USER' => $user
+        // ], ['channel' => 'api']);
+
+        // $data = $this->json([
+        //     'id' => $user->getId(),
+        //     // 'name' => $user->getName(),
+        //     // 'email' => $user->getEmail(),
+        //     // 'walletPublicAddress' => $user->getWalletPublicAddress(),
+        // ]);
+        // return $this->json($data);
     }
 
 
