@@ -487,4 +487,16 @@ private function setUserStep(User $user, string $step): void
 
         return $user;
     }
+    
+    public function getWalletPublicAddress(): ?string
+    {
+        return $this->walletPublicAddress;
+    }
+
+    public function setWalletPublicAddress(?string $walletPublicAddress): self
+    {
+        $this->walletPublicAddress = $walletPublicAddress;
+
+        return $this;
+    }
 }

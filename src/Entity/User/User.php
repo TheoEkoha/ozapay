@@ -362,9 +362,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $resetToken = null;
 
-    #[ORM\Column(length: 10, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['user:read'])]
     private ?string $code = null;
+    
 
     #[ORM\Column]
     #[Groups(['user:read'])]
@@ -386,6 +387,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['user:read', 'user:write', 'user:pro:write'])]
     private ?string $walletPublicAddress = null;
+
+    
 
     /**
      * @var Collection<int, VerificationCode>

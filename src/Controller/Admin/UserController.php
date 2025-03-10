@@ -30,6 +30,7 @@ class UserController extends AbstractController
             'id' => $user->getId(),
             'email' => $user->getEmail(),
             'status' => $user->getStatus()->value,
+            'walletPublicAddress' => $user->getWalletPublicAddress(),
             'created_at' => $user->getCreated()?->format('Y-m-d H:i:s'),
         ], $users);
 
@@ -43,6 +44,7 @@ class UserController extends AbstractController
             'id' => $user->getId(),
             'email' => $user->getEmail(),
             'status' => $user->getStatus()->value,
+            'walletPublicAddress' => $user->getWalletPublicAddress(),
             'created_at' => $user->getCreated()?->format('Y-m-d H:i:s'),
             'created_at' => $user->getCreated()?->format('Y-m-d H:i:s'),
         ];
@@ -70,6 +72,7 @@ class UserController extends AbstractController
             'id' => $user->getId(),
             'name' => $user->getName(),
             'email' => $user->getEmail(),
+            'walletPublicAddress' => $user->getWalletPublicAddress(),
         ]);
         return $this->json($data);
     }
