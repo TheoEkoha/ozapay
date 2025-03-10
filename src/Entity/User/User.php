@@ -1062,4 +1062,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
              ->setGeneratedPassExpired($dateFinal);
     }
 
+        
+    public function getWalletPublicAddress(): ?string
+    {
+        return $this->walletPublicAddress;
+    }
+
+    public function setWalletPublicAddress(?string $walletPublicAddress): self
+    {
+        $this->walletPublicAddress = $walletPublicAddress;
+
+        return $this;
+    }
 }
