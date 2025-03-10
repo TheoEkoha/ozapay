@@ -26,6 +26,10 @@ class UserController extends AbstractController
     {
         $users = $this->repository->findAll();
 
+        dump($users);
+
+        $logger->info('Liste des utilisateurs récupérée', ['users' => $users]);
+
         $data = array_map(fn(User $user) => [
             'id' => $user->getId(),
             'email' => $user->getEmail(),
@@ -34,6 +38,7 @@ class UserController extends AbstractController
             'created_at' => $user->getCreated()?->format('Y-m-d H:i:s'),
         ], $users);
 
+        
         return $this->json($data);
     }
 
