@@ -19,7 +19,9 @@ class UserController extends AbstractController
         private readonly UserService $service,
         private EntityManagerInterface $em,
         private LoggerInterface $logger // Injection du logger
-    ) {}
+    ) {
+        $this->logger = $logger;
+    }
 
     #[Route('/', name: 'list', methods: ['GET'])]
     public function index(): JsonResponse
