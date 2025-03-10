@@ -120,8 +120,11 @@ class AddUsersCommand extends Command
                 $headerArray = explode(';', $headerString);
                 $dataArray = explode(';', $dataString);
 
+                if (count($headerArray) !== count($dataArray)) {
+                    throw new \RuntimeException("Le nombre de colonnes ne correspond pas dans le fichier CSV à la ligne : " . json_encode($dataArray));
+                }
+                
                 $rowData = array_combine($headerArray, $dataArray);
-
                 // Check if email already exists in database
                 $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowData['email']]);
                 $existingUserByPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $rowData['telephone']]);
