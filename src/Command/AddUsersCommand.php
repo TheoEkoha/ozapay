@@ -91,7 +91,6 @@ class AddUsersCommand extends Command
 
 private function processFile(string $filePath, SymfonyStyle $io): void
 {
-    // Début du traitement du fichier CSV
     $io->info("Processing file: " . basename($filePath));
 
     // Ouvrir le fichier CSV
@@ -102,7 +101,7 @@ private function processFile(string $filePath, SymfonyStyle $io): void
     }
 
     // Lire les en-têtes du fichier CSV
-    $headers = fgetcsv($handle, 0, ',');
+    $headers = fgetcsv($handle, 0, ';'); // Utilisation du séparateur ";"
     if (!$headers) {
         $io->error("Failed to read headers from file.");
         fclose($handle);
@@ -111,57 +110,47 @@ private function processFile(string $filePath, SymfonyStyle $io): void
     
     $io->info("Headers: " . json_encode($headers));
 
-    // Préparer le tableau d'utilisateurs
-    $userArray = [];
-
     // Progression de l'importation
-    $progressBar = $io->createProgressBar(count(file($filePath)) - 1);  // -1 pour ignorer les en-têtes
+    $progressBar = $io->createProgressBar(count(file($filePath)) - 1);
     $progressBar->start();
 
-    // Compteur de doublons
-    $skippedCount = 0;
-
     // Traitement des lignes du fichier CSV
-    while (($rowData = fgetcsv($handle, 0, ',')) !== false) {
-        // Combinaison des données avec les en-têtes
+    while (($rowData = fgetcsv($handle, 0, ';')) !== false) {
+        // Vérification du nombre de colonnes avant de combiner les données
+        if (count($rowData) !== count($headers)) {
+            $io->warning("Mismatch in number of columns. Skipping this row.");
+            $progressBar->advance();
+            continue;
+        }
 
-        // Affichage des données de l'utilisateur en cours pour débogage
-        $io->info("User data: " . json_encode($rowData));
+        // Log de la ligne brute
+        $io->info("Raw data: " . json_encode($rowData));
 
-        // Vérification de l'existence de l'email ou du téléphone dans la base de données
-        $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowData['email']]);
-        $existingUserByPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $rowData['telephone']]);
+        // Associer les données aux en-têtes
+        $rowDataAssoc = array_combine($headers, $rowData);
+        if ($rowDataAssoc === false) {
+            $io->warning("Error associating data to headers.");
+            $progressBar->advance();
+            continue;
+        }
+
+        $io->info("User data: " . json_encode($rowDataAssoc));
+
+        // Vérification des doublons dans la base de données
+        $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowDataAssoc['Email']]);
+        $existingUserByPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $rowDataAssoc['Telephone']]);
 
         if ($existingUser || $existingUserByPhone) {
-            // Si un doublon est trouvé dans la base de données
-            $skippedCount++;
+            // Si un doublon est trouvé
             $progressBar->advance();
             continue;
         }
 
-        // Vérification des doublons dans le tableau d'utilisateurs importés
-        $isDuplicate = false;
-        foreach ($userArray as $existingUser) {
-            if ($existingUser['email'] === $rowData['email'] || $existingUser['telephone'] === $rowData['telephone']) {
-                $isDuplicate = true;
-                $skippedCount++;
-                break;
-            }
-        }
-
-        if ($isDuplicate) {
-            $progressBar->advance();
-            continue;
-        }
-
-        // Ajouter l'utilisateur au tableau pour éviter les doublons dans ce fichier
-        $userArray[] = $rowData;
-
-        // Créer l'utilisateur dans la base de données
+        // Créer un nouvel utilisateur
         $user = new User();
-        $user->setEmail($rowData['email']);
-        $user->setPhone($rowData['telephone']);
-        // Ajoutez d'autres informations utilisateur selon votre modèle
+        $user->setEmail($rowDataAssoc['Email']);
+        $user->setPhone($rowDataAssoc['Telephone']);
+        // Ajoutez d'autres informations utilisateur ici...
 
         // Persister l'utilisateur dans la base de données
         $this->em->persist($user);
@@ -173,11 +162,10 @@ private function processFile(string $filePath, SymfonyStyle $io): void
     $this->em->flush();
     fclose($handle);
 
-    // Affichage des résultats
+    // Affichage du résultat final
     $progressBar->finish();
-    $io->success("Import completed. Imported " . (count($userArray) - $skippedCount) . " users. Skipped $skippedCount duplicate entries.");
+    $io->success("Import completed.");
 }
-
     private function createUser(array $rowData): User
     {
         $user = new User();
