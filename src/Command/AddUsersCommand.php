@@ -123,7 +123,7 @@ class AddUsersCommand extends Command
                 $rowData = array_combine($headerArray, $dataArray);
 
                 // Check if email already exists in database
-                $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowData['mails']]);
+                $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowData['email']]);
                 $existingUserByPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $rowData['telephone']]);
                 if ($existingUser || $existingUserByPhone) {
                     $skippedCount++;
@@ -134,7 +134,7 @@ class AddUsersCommand extends Command
                 // Check for duplicates in current import
                 $isDuplicate = false;
                 foreach ($userArray as $existingUser) {
-                    if ($existingUser['mails'] === $rowData['mails'] ||
+                    if ($existingUser['email'] === $rowData['email'] ||
                         $existingUser['telephone'] === $rowData['telephone']) {
                         $isDuplicate = true;
                         $skippedCount++;
@@ -201,7 +201,7 @@ class AddUsersCommand extends Command
             ->setRoles($roles)
             ->setFirstName($rowData['prenom'])
             ->setLastName($rowData['nom'])
-            ->setEmail($rowData['mails'] ?? null)
+            ->setEmail($rowData['email'] ?? null)
             ->setPhone($rowData['telephone'] ?? null)
             ->setPostalCode($rowData['codepostal'] ?? null)
             ->setCity($rowData['ville'] ?? null)
