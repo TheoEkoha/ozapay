@@ -1,7 +1,7 @@
 monolog:
-    channels:
-        - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
-        - api # Canal pour loguer les appels API
+    channels: 
+        - deprecation  # Deprecations are logged in the dedicated "deprecation" channel when it exists
+        - api  # Canal pour loguer les appels API
 
 when@dev:
     monolog:
@@ -10,14 +10,14 @@ when@dev:
                 type: stream
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
-                channels: ["!event", "!api"] # Exclure le canal API du handler principal
+                channels: ["!event"]  # On garde "api" dans dev pour debug plus facilement
             console:
                 type: console
                 process_psr_3_messages: false
                 channels: ["!event", "!doctrine", "!console"]
             api:
                 type: stream
-                path: "%kernel.logs_dir%/api.log" # Fichier de log spécifique pour les API
+                path: "%kernel.logs_dir%/api.log"
                 level: debug
                 channels: ["api"]
 
@@ -68,3 +68,4 @@ when@prod:
                 path: "%kernel.logs_dir%/api.log"
                 level: debug
                 channels: ["api"]
+                formatter: monolog.formatter.json # Ajout pour cohérence en prod
