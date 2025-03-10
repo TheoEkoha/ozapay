@@ -87,107 +87,96 @@ class AddUsersCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function processFile(string $filePath, SymfonyStyle $io): void
+
+
+private function processFile(string $filePath, SymfonyStyle $io): void
 {
-    if (($handle = fopen($filePath, "r")) === false) {
-        throw new \RuntimeException("Could not open file: $filePath");
+    // Début du traitement du fichier CSV
+    $io->info("Processing file: " . basename($filePath));
+
+    // Ouvrir le fichier CSV
+    $handle = fopen($filePath, 'r');
+    if (!$handle) {
+        $io->error("Failed to open file: " . basename($filePath));
+        return;
     }
 
-    // Count total rows (excluding header)
-    $totalRows = -1;
-    while (!feof($handle)) {
-        if (fgetcsv($handle) !== false) {
-            $totalRows++;
-        }
+    // Lire les en-têtes du fichier CSV
+    $headers = fgetcsv($handle, 0, ',');
+    if (!$headers) {
+        $io->error("Failed to read headers from file.");
+        fclose($handle);
+        return;
     }
-    rewind($handle);
+    
+    $io->info("Headers: " . json_encode($headers));
 
-    $headers = array_map('strtolower', fgetcsv($handle));
-    $importCount = 0;
-    $skippedCount = 0;
-    $i = 0;
+    // Préparer le tableau d'utilisateurs
     $userArray = [];
 
-    $progressBar = $io->createProgressBar($totalRows);
+    // Progression de l'importation
+    $progressBar = $io->createProgressBar(count(file($filePath)) - 1);  // -1 pour ignorer les en-têtes
     $progressBar->start();
 
-    $this->em->getConnection()->beginTransaction();
-    try {
-        while (($data = fgetcsv($handle)) !== false) {
-            $headerString = $headers[0];
-            $dataString = $data[0];
+    // Compteur de doublons
+    $skippedCount = 0;
 
-            $headerArray = explode(';', $headerString);
-            $dataArray = explode(';', $dataString);
+    // Traitement des lignes du fichier CSV
+    while (($rowData = fgetcsv($handle, 0, ',')) !== false) {
+        // Combinaison des données avec les en-têtes
+        $rowData = array_combine($headers, $rowData);
 
-            if (count($headerArray) !== count($dataArray)) {
-                throw new \RuntimeException("Le nombre de colonnes ne correspond pas dans le fichier CSV à la ligne : " . json_encode($dataArray));
-            }
+        // Affichage des données de l'utilisateur en cours pour débogage
+        $io->info("User data: " . json_encode($rowData));
 
-            $rowData = array_combine($headerArray, $dataArray);
+        // Vérification de l'existence de l'email ou du téléphone dans la base de données
+        $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowData['email']]);
+        $existingUserByPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $rowData['telephone']]);
 
-            // Check if 'email' key exists
-            if (!isset($rowData['email'])) {
-                $skippedCount++;
-                $progressBar->advance();
-                continue; // Skip this row if email is missing
-            }
-
-            // Check if email already exists in database
-            $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowData['email']]);
-            $existingUserByPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $rowData['telephone']]);
-            if ($existingUser || $existingUserByPhone) {
-                $skippedCount++;
-                $progressBar->advance();
-                continue;
-            }
-
-            // Check for duplicates in current import
-            $isDuplicate = false;
-            foreach ($userArray as $existingUser) {
-                if ($existingUser['email'] === $rowData['email'] ||
-                    $existingUser['telephone'] === $rowData['telephone']) {
-                    $isDuplicate = true;
-                    $skippedCount++;
-                    break;
-                }
-            }
-
-            if (!$isDuplicate) {
-                $userArray[] = $rowData;
-                $user = $this->createUser($rowData);
-                $this->em->persist($user);
-                $importCount++;
-                $i++;
-
-                if (($i % self::BATCH_SIZE) === 0) {
-                    $this->em->flush();
-                    $this->em->clear();
-                }
-            }
-
+        if ($existingUser || $existingUserByPhone) {
+            // Si un doublon est trouvé dans la base de données
+            $skippedCount++;
             $progressBar->advance();
+            continue;
         }
 
-        // Final flush for remaining records
-        $this->em->flush();
-        $this->em->getConnection()->commit();
+        // Vérification des doublons dans le tableau d'utilisateurs importés
+        $isDuplicate = false;
+        foreach ($userArray as $existingUser) {
+            if ($existingUser['email'] === $rowData['email'] || $existingUser['telephone'] === $rowData['telephone']) {
+                $isDuplicate = true;
+                $skippedCount++;
+                break;
+            }
+        }
 
-        $progressBar->finish();
-        $io->newLine(2);
+        if ($isDuplicate) {
+            $progressBar->advance();
+            continue;
+        }
 
-        fclose($handle);
+        // Ajouter l'utilisateur au tableau pour éviter les doublons dans ce fichier
+        $userArray[] = $rowData;
 
-        $io->success(sprintf(
-            "Imported %d users. Skipped %d duplicate entries.",
-            $importCount,
-            $skippedCount
-        ));
-    } catch (\Exception $e) {
-        $this->em->getConnection()->rollBack();
-        fclose($handle);
-        throw $e;
+        // Créer l'utilisateur dans la base de données
+        $user = new User();
+        $user->setEmail($rowData['email']);
+        $user->setPhone($rowData['telephone']);
+        // Ajoutez d'autres informations utilisateur selon votre modèle
+
+        // Persister l'utilisateur dans la base de données
+        $this->em->persist($user);
+
+        $progressBar->advance();
     }
+
+    // Finaliser l'importation
+    $this->em->flush();
+    fclose($handle);
+
+    // Affichage des résultats
+    $progressBar->finish();
+    $io->success("Import completed. Imported " . (count($userArray) - $skippedCount) . " users. Skipped $skippedCount duplicate entries.");
 }
 
     private function createUser(array $rowData): User
