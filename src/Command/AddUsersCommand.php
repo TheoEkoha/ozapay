@@ -111,7 +111,7 @@ class AddUsersCommand extends Command
         $progressBar = $io->createProgressBar($totalRows);
         $progressBar->start();
 
-        $this->em->getConnection()->beginTransaction();
+        //$this->em->getConnection()->beginTransaction();
         try {
             while (($data = fgetcsv($handle)) !== false) {
                 $headerString = $headers[0];
@@ -125,6 +125,11 @@ class AddUsersCommand extends Command
                 // Check if email already exists in database
                 $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $rowData['email']]);
                 $existingUserByPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $rowData['telephone']]);
+                $io->success(sprintf(
+                    "existingUserByPhone %d users. existingUser %d duplicate entries.",
+                    $existingUserByPhone,
+                    $existingUser
+                ));
                 if ($existingUser || $existingUserByPhone) {
                     $skippedCount++;
                     $progressBar->advance();
@@ -159,11 +164,11 @@ class AddUsersCommand extends Command
             }
 
             // Final flush for remaining records
-            $this->em->flush();
-            $this->em->getConnection()->commit();
+            // $this->em->flush();
+            // $this->em->getConnection()->commit();
 
             $progressBar->finish();
-            $io->newLine(2);
+             $io->newLine(2);
 
             fclose($handle);
 
