@@ -29,7 +29,7 @@ class UserController extends AbstractController
         $users = $this->repository->findAll();
 
         $this->logger->info('API Call GEET USER', [
-            'USER' => $user
+            'USER' => $users
         ], ['channel' => 'api']);
 
         $data = array_map(fn(User $user) => [
