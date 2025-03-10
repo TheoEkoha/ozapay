@@ -124,7 +124,6 @@ private function processFile(string $filePath, SymfonyStyle $io): void
     // Traitement des lignes du fichier CSV
     while (($rowData = fgetcsv($handle, 0, ',')) !== false) {
         // Combinaison des données avec les en-têtes
-        $rowData = array_combine($headers, $rowData);
 
         // Affichage des données de l'utilisateur en cours pour débogage
         $io->info("User data: " . json_encode($rowData));
