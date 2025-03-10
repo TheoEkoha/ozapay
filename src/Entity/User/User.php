@@ -386,7 +386,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['user:read', 'user:write', 'user:pro:write'])]
-    #[Get(normalizationContext: ['groups' => ['user:read']])]
     private ?string $walletPublicAddress = null;
 
     
