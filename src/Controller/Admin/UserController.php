@@ -26,7 +26,9 @@ class UserController extends AbstractController
     {
         $users = $this->repository->findAll();
 
-        $this->logger->info('Liste des utilisateurs récupérée');
+        $this->logger->info('API Call GEET USER', [
+            'USER' => $user
+        ], ['channel' => 'api']);
 
         $data = array_map(fn(User $user) => [
             'id' => $user->getId(),
