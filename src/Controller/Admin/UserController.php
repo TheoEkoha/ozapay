@@ -26,8 +26,7 @@ class UserController extends AbstractController
     {
         $users = $this->repository->findAll();
 
-
-        $logger->info('Liste des utilisateurs récupérée', ['users' => $users]);
+        $this->logger->info('Liste des utilisateurs récupérée', ['users' => $users]);
 
         $data = array_map(fn(User $user) => [
             'id' => $user->getId(),
