@@ -36,7 +36,6 @@ class UserController extends AbstractController
             'id' => $user->getId(),
             'email' => $user->getEmail(),
             'status' => $user->getStatus()->value,
-            'walletPublicAddress' => $user->getWalletPublicAddress(),
             'created_at' => $user->getCreated()?->format('Y-m-d H:i:s'),
         ], $users);
 
