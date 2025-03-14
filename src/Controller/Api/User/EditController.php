@@ -33,12 +33,20 @@ class EditController extends AbstractController
         $sessionId = bin2hex(random_bytes(32)); // Génère un ID de session unique
         $tempToken = $this->authService->storeAuthenticationSession($sessionId, $updatedUser->getId());
 
-        // Retourner une réponse JSON avec le token
-        return new JsonResponse([
+        // Construire la réponse JSON avec tous les champs de $updatedUser
+        $userData = [
             'message' => 'User updated successfully',
             'tempToken' => $tempToken,
             'token' => $tempToken,
-        ]);
+        ];
+
+        // Ajouter dynamiquement tous les champs de l'utilisateur mis à jour
+        foreach (get_object_vars($updatedUser) as $key => $value) {
+            $userData[$key] = $value;
+        }
+
+        // Retourner la réponse JSON
+        return new JsonResponse($userData);
     }
 
 }
