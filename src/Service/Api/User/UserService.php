@@ -169,10 +169,13 @@ readonly class UserService extends UserCommonService
             if (!is_null($existedUser)) {
                 $this->createRelation($user, $existedUser, $data['code']);
             }
+            $user
+            ->setCode($data['code']);
+        } else {
+            $user->setCode(strtoupper($this->tools->generateRandomString(6)));
+
         }
 
-        $user
-            ->setCode($data['code']);
            // ->setStep('info');
             //->setStep(Step::Info);
 
@@ -205,7 +208,7 @@ public function edit(User $user, Request $request): User
         // Gérer le code PIN
         if (isset($data['pin']) && $data['_step'] === 'pin') {
             $this->handlePinUpdate($user, $data['pin']);
-            $user->setCode(strtoupper($this->tools->generateRandomString(6)));
+           // $user->setCode(strtoupper($this->tools->generateRandomString(6)));
         }
 
         $dataArray = $request->toArray(); // Récupère les données de la requête
