@@ -11,7 +11,7 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-
+use App\Repository\User\UserRepository;
 
 readonly class MailerService
 {
@@ -22,6 +22,7 @@ readonly class MailerService
         private ParameterBagInterface $bag,
         private Tools                         $tools,
         protected UserPasswordHasherInterface $passwordHasher,
+        private UserRepository                $repository
     ) {
     }
 
