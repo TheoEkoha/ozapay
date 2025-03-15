@@ -8,11 +8,14 @@ use App\Service\Base\BaseMailerService;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Doctrine\ORM\EntityManagerInterface;
+
 
 readonly class MailerService
 {
     public function __construct(
         private BaseMailerService     $mailer,
+        private EntityManagerInterface        $em,
         private TranslatorInterface   $translator,
         private ParameterBagInterface $bag
     ) {
@@ -101,26 +104,34 @@ readonly class MailerService
 
     public function sendMailToResetPass(User $user, string $url): void
     {
-        $htmlContent = sprintf(
-            '<html lang="en">
-                    <body>
-                        <h1>Reinitialize password</h1>
-                        <p>Dear %s,</p>
-                        <p>Clik on link bellow to rest your pass.</p>
-                        <p><a href="%s">Cliquer ici</a></p>
-                    </body>
-                </html>',
-            htmlspecialchars($user->getFullName()),
-            htmlspecialchars($url)
-        );
+        // $htmlContent = sprintf(
+        //     '<html lang="en">
+        //             <body>
+        //                 <h1>Reinitialize password</h1>
+        //                 <p>Dear %s,</p>
+        //                 <p>Clik on link bellow to rest your pass.</p>
+        //                 <p><a href="%s">Cliquer ici</a></p>
+        //             </body>
+        //         </html>',
+        //     htmlspecialchars($user->getFullName()),
+        //     htmlspecialchars($url)
+        // );
+
+        $generatedPassword = $this->tools->generateRandomString();
+        $user->setPassword($this->passwordHasher->hashPassword($user, $generatedPassword));
+
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->repository->save($user);
+
 
         $this->mailer->sendSmtpEmail(
             $this->translator->trans('email.reset_password.title'),
             ['name' => 'Ozapay', 'email' => $this->bag->get('admin_email')],
             ['name' => $user->getFullName(), 'email' => $user->getEmail()],
-            null,
-            [],
-            $htmlContent
+            (int)BrevoMailTemplateConstants::FORGOT_PASSWORD,
+            ['USERNAME' => $user->getFullName() , 'PASSWORD' => $generatedPassword],
+            null
         );
     }
 
