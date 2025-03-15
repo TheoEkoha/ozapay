@@ -93,7 +93,7 @@ readonly class MailerService
             ['name' => 'Ozapay', 'email' => $this->bag->get('admin_email')],
             ['name' => $user->getFullName(), 'email' => $user->getEmail()],
             (int)BrevoMailTemplateConstants::REGISTRATION_WELCOME,
-            ['USERNAME' => $user->getFullName() , 'PASSWORD' => $generatedPassword, 'AFFILIATE' => 'DSDSDS'],
+            ['USERNAME' => $user->getFullName() , 'PASSWORD' => $generatedPassword, 'AFFILIATE' => $user->getCode()],
             null
         );
 

@@ -164,7 +164,7 @@ readonly class UserService extends UserCommonService
             }
         }
 
-        if (!is_null($data['code'])) {
+        if (!is_null($data['code']) && $data['code'] != '') {
             $existedUser = $this->repository->findOneBy(['code' => $data['code'], 'status' => Status::Published]);
             if (!is_null($existedUser)) {
                 $this->createRelation($user, $existedUser, $data['code']);
