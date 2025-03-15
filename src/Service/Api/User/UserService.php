@@ -169,8 +169,7 @@ readonly class UserService extends UserCommonService
             if (!is_null($existedUser)) {
                 $this->createRelation($user, $existedUser, $data['code']);
             }
-            $user
-            ->setCode($data['code']);
+            $user->setCode($data['code']);
         } else {
             $user->setCode(strtoupper($this->tools->generateRandomString(6)));
 
