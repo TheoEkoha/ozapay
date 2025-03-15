@@ -5,6 +5,7 @@ namespace App\Service\Mail;
 use App\Common\Constants\BrevoMailTemplateConstants;
 use App\Entity\User\User;
 use App\Service\Base\BaseMailerService;
+use App\Utils\Tools;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -17,7 +18,8 @@ readonly class MailerService
         private BaseMailerService     $mailer,
         private EntityManagerInterface        $em,
         private TranslatorInterface   $translator,
-        private ParameterBagInterface $bag
+        private ParameterBagInterface $bag,
+        private Tools                         $tools,
     ) {
     }
 
