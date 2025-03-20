@@ -49,13 +49,13 @@ class VerifyCodeController extends AbstractController
     // Si la vérification réussit et que le retour est une instance de VerificationCode
     if ($dataVerified instanceof VerificationCode) {
         // Log des données vérifiées
-        $this->logger->info("VerifyCodeController Données vérifiées : " . print_r($dataVerified, true));
+        //$this->logger->info("VerifyCodeController Données vérifiées : " . print_r($dataVerified, true));
 
         // Sérialise les données vérifiées
         $dataSerialized = json_decode($this->serializer->serialize($dataVerified, 'jsonld', ['groups' => ['verification:read','user:read']]));
 
         // Log des données sérialisées
-        $this->logger->info("VerifyCodeController Données sérialisées : " . print_r($dataSerialized, true));
+        //$this->logger->info("VerifyCodeController Données sérialisées : " . print_r($dataSerialized, true));
 
         // Génère un ID de session unique
         $sessionId = bin2hex(random_bytes(32));
