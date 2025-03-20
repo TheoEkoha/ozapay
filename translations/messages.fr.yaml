@@ -24,12 +24,12 @@ User list: 'Liste des utilisateurs'
 
 email:
   confirmation:
-    title: "Confirmation de votre email"
-    welcome: "Bienvenu sur notre polatforme"
+    title: "Votre mot de passe temporaire Ozapay"
+    welcome: "Bienvenue sur notre plateforme"
     message: "Votre code de confirmation est: "
   complete_registration:
-    title: "Réussite de la création de votre compte"
-    welcome: "Bienvenue sur notre polatforme"
+    title: "Bienvenue chez Ozapay, votre compte est ouvert !"
+    welcome: "Bienvenue sur notre plateforme"
     message: "Votre compte a été créé avec succès!"
   reset_password:
     title: "Réinitialisation de votre mot de passe"

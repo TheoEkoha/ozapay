@@ -27,7 +27,7 @@ class VerificationCode
     #[Groups(['verification:read'])]
     private ?\DateTimeImmutable $expiredAt = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: 'is_verified')]
     #[Groups(['verification:read'])]
     private ?bool $isVerified = null;
 

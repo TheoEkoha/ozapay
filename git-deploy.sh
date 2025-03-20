@@ -19,7 +19,7 @@ echo "$NEW_COMMIT_NUMBER" > "$COMMIT_NUMBER_FILE"
 
 # Effectue le commit avec le nouveau numéro
 git add .
-git commit -m "fix: INSCRIPTION $NEW_COMMIT_NUMBER"
+git commit -m "fix: CORS $NEW_COMMIT_NUMBER"
 
 # Ajoute les autres commandes nécessaires ici (comme le push)
 git push origin main

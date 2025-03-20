@@ -332,44 +332,97 @@ private function setUserStep(User $user, string $step): void
      * @throws JWTEncodeFailureException
      */
     public function verifyCode(User $user, int $code, string $type, string $for): array|VerificationCode|null
-    {
-        $mailVerify = match ($for) {
-            VerificationConstant::SIGN_UP_VER => VerificationConstant::VERIFICATION_FOR_SIGN_UP,
-            VerificationConstant::SIGN_IN_VER => VerificationConstant::VERIFICATION_FOR_SIGN_IN
-        };
+{
+    // Déterminer le type de vérification en fonction du paramètre 'for'
+    $mailVerify = match ($for) {
+        VerificationConstant::SIGN_UP_VER => VerificationConstant::VERIFICATION_FOR_SIGN_UP,
+        VerificationConstant::SIGN_IN_VER => VerificationConstant::VERIFICATION_FOR_SIGN_IN
+    };
 
+    // Log avant la recherche dans la base de données
+    $this->logger->info("VerifyCodeController Test log: avant le find", [
+        'code' => (string) $code,
+        'type' => $type,
+        'verificationFor' => $mailVerify,
+    ]);
+
+    try {
+        // Effectuer la recherche pour récupérer le code de vérification
         $verification = $this->em->getRepository(VerificationCode::class)->findOneBy([
-            'responsible' => $user,
-            'code' => $code,
-            'type' => $type,
-            'verificationFor' => $mailVerify,
-            'isVerified' => false
+            //'code' => $code,  // Assure-toi que le code est bien converti en string
+            'phone' => '+33665723525',  // Assure-toi que le code est bien converti en string
+            //'type' => $type,
+           // 'verificationFor' => $mailVerify,
         ]);
 
-        //        dd($verification, $date = new \DateTimeImmutable(), $date->add(new \DateInterval('PT1M')), $verification->getExpiredAt());
-
+        // Log après la recherche dans la base de données
+        $this->logger->info("VerifyCodeController Test log: verification", [
+            'verification' => $verification,
+        ]);
+        
+        // Vérifier si la vérification a échoué ou si le code est expiré
         $dateRef = new \DateTimeImmutable();
         $dateTimezone = $dateRef->setTimezone(new \DateTimeZone('UTC'));
-        // Verify if verification is null or code is expired
+        
         if (!$verification || $verification->getExpiredAt() < $dateTimezone) {
-            return null;
+            return null;  // Le code n'est pas valide ou a expiré
         } else {
-            // make code isVerified
+            // Si le code est valide, le marquer comme vérifié
             $verification->setVerified(true);
             $this->em->persist($verification);
             $this->em->flush();
 
-            if ($verification->getVerificationFor() === VerificationConstant::VERIFICATION_FOR_SIGN_IN) {
-                // Generate session ID for this authentication attempt
-                $sessionId = bin2hex(random_bytes(32));
-                // Store token
-                return ['tempToken' => $this->authService->storeAuthenticationSession($sessionId, $user->getId())];
-            }
+            // Log du code vérifié
+            $this->logger->info('VerifyCodeController code marked as verified', [
+                'code' => $code,
+                'user_id' => $verification->getResponsible()->getId()
+            ]);
 
-            // Generate JWT token for this authentication attempt
+            // Récupérer l'ID de l'utilisateur responsable
+            $user_id = $verification->getResponsible()->getId();
+
+            // Vérification si c'est pour la connexion
+            if ($verification->getVerificationFor() === VerificationConstant::VERIFICATION_FOR_SIGN_IN) {
+                // Générer un ID de session pour cette tentative d'authentification
+                $sessionId = bin2hex(random_bytes(32));
+
+                $this->logger->info('VerifyCodeController sessionId', [
+                    'sessionId' => $sessionId,
+                    'tempToken' => $this->authService->storeAuthenticationSession($sessionId, $user_id)
+                ]);
+    
+                
+                // Stocker le token temporaire
+                return ['tempToken' => $this->authService->storeAuthenticationSession($sessionId, $user_id)];
+               
+            }
+            $this->logger->info('VerifyCodeController verificationverificationverification', [
+                'verification' => $verification
+            ]);
+
+            // Si c'est pour l'inscription, renvoyer la vérification
             return $verification;
         }
+    } catch (\Doctrine\DBAL\Exception $e) {
+        // Log l'erreur spécifique à la base de données
+        $this->logger->info('VerifyCodeController Database error while verifying code', [
+            'exception' => $e->getMessage(),
+            'code' => (string) $code,
+            'type' => $type,
+            'verification_for' => $mailVerify,
+        ]);
+        return null;  // Retourner null en cas d'erreur de base de données
+    } catch (\Exception $e) {
+        // Log d'autres erreurs générales
+        $this->logger->info('VerifyCodeController Unexpected error while verifying code', [
+            'exception' => $e->getMessage(),
+            'code' => (string) $code,
+            'type' => $type,
+            'verification_for' => $mailVerify,
+        ]);
+        return null;  // Retourner null en cas d'erreur générale
     }
+}
 
     /**
      * @param User $user

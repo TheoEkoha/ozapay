@@ -8,7 +8,8 @@ when@dev:
         handlers:
             main:
                 type: stream
-                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                path: "/var/log/dev.log"
+                #path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
                 channels: ["!event"]  # On garde "api" dans dev pour debug plus facilement
             console:
@@ -17,7 +18,8 @@ when@dev:
                 channels: ["!event", "!doctrine", "!console"]
             api:
                 type: stream
-                path: "%kernel.logs_dir%/api.log"
+                path: "/var/log/api.log"
+                #path: "%kernel.logs_dir%/api.log"
                 level: debug
                 channels: ["api"]
 
@@ -32,11 +34,13 @@ when@test:
                 channels: ["!event"]
             nested:
                 type: stream
-                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                path: "/var/log/test.log"
+                #path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
             api:
                 type: stream
-                path: "%kernel.logs_dir%/api.log"
+                path: "/var/log/test_api.log"
+                #path: "%kernel.logs_dir%/api.log"
                 level: debug
                 channels: ["api"]
 
@@ -65,7 +69,8 @@ when@prod:
                 formatter: monolog.formatter.json
             api:
                 type: stream
-                path: "%kernel.logs_dir%/api.log"
+                path: "/var/log/prod_api.log"
+                #path: "%kernel.logs_dir%/api.log"
                 level: debug
                 channels: ["api"]
                 formatter: monolog.formatter.json # Ajout pour cohérence en prod
