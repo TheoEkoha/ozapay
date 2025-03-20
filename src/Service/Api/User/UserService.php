@@ -349,8 +349,8 @@ private function setUserStep(User $user, string $step): void
     try {
         // Effectuer la recherche pour récupérer le code de vérification
         $verification = $this->em->getRepository(VerificationCode::class)->findOneBy([
-            //'code' => $code,  // Assure-toi que le code est bien converti en string
-            'phone' => '+33665723525',  // Assure-toi que le code est bien converti en string
+            'code' => $code,  // Assure-toi que le code est bien converti en string
+            //'phone' => '+33665723525',  // Assure-toi que le code est bien converti en string
             //'type' => $type,
            // 'verificationFor' => $mailVerify,
         ]);
